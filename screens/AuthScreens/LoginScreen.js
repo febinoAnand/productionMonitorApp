@@ -1,21 +1,35 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Keyboard, TouchableWithoutFeedback, Image } from 'react-native';
 import { Input, Button, Icon } from 'react-native-elements';
+import LoadingScreen from './loadingscreen';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = () => {
-    navigation.navigate('Loading', { nextScreen: 'TabScreen' });
+    setIsLoading(true);
+    setTimeout(() => {
+      if (username === '' && password === '') {
+        navigation.navigate('TabScreen');
+      } else {
+        alert('Invalid username or password');
+      }
+      setIsLoading(false);
+    }, 2000);
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {isLoading ? (
+          <LoadingScreen />
+        ) : (
       <View style={styles.container}>
         <Image
           source={require('../../assets/hlmando.png')}
           style={styles.image}
+          resizeMode="contain"
         />
         <Input
           placeholder="Username"
@@ -38,8 +52,10 @@ const LoginScreen = ({ navigation }) => {
           title="Login"
           onPress={handleLogin}
           buttonStyle={styles.ovalButton}
+          disabled={isLoading}
         />
       </View>
+        )}
     </TouchableWithoutFeedback>
   );
 };
@@ -67,5 +83,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
-
 export default LoginScreen;

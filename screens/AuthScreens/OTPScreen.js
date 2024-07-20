@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
+import { View, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import LoadingScreen from './loadingscreen';
 
-const OTPScreen = ({ navigation, route }) => {
+const OTPScreen = ({ navigation }) => {
   const [otp, setOtp] = useState(['', '', '', '', '']);
-  const { phoneOrEmail } = route.params;
+  const [phoneOrEmail, setPhoneOrEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const inputs = useRef([]);
 
   const handleOtpInput = (index, value) => {
@@ -24,9 +26,15 @@ const OTPScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleOTPVerify = () => {
+  const handleOTPVerify = async () => {
+    setIsLoading(true);
+
     const enteredOtp = otp.join('');
-    navigation.navigate('Loading', { nextScreen: 'Registration', params: { phoneOrEmail, otp: enteredOtp } });
+    console.log(`Verifying OTP: ${enteredOtp} for ${phoneOrEmail}`);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    setIsLoading(false);
+    navigation.navigate('Registration');
   };
 
   const handleResendOTP = () => {
@@ -36,30 +44,36 @@ const OTPScreen = ({ navigation, route }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
-        <View style={styles.textContainer}>
-          <Text style={styles.baseText}>OTP was sent to +91-********56</Text>
-          <Text style={styles.innerText}>Click back to change mobile no</Text>
-        </View>
-        <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
-            <TextInput
-              key={index}
-              style={styles.input}
-              value={digit}
-              onChangeText={(text) => handleOtpInput(index, text)}
-              maxLength={1}
-              keyboardType="number-pad"
-              ref={(ref) => (inputs.current[index] = ref)}
-              onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
-            />
-          ))}
-        </View>
-        <TouchableOpacity onPress={handleOTPVerify} style={[styles.button, styles.verifyButton]}>
-          <Text style={styles.buttonText}>Verify OTP</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleResendOTP} style={[styles.button, styles.resendButton]}>
-          <Text style={styles.buttonText}>Resend OTP</Text>
-        </TouchableOpacity>
+        {isLoading ? (
+          <LoadingScreen />
+        ) : (
+          <>
+            <View style={styles.textContainer}>
+              <Text style={styles.baseText}>OTP was sent to +91-********56</Text>
+              <Text style={styles.innerText}>Click back to change mobile no</Text>
+            </View>
+            <View style={styles.otpContainer}>
+              {otp.map((digit, index) => (
+                <TextInput
+                  key={index}
+                  style={styles.input}
+                  value={digit}
+                  onChangeText={(text) => handleOtpInput(index, text)}
+                  maxLength={1}
+                  keyboardType="number-pad"
+                  ref={(ref) => (inputs.current[index] = ref)}
+                  onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
+                />
+              ))}
+            </View>
+            <TouchableOpacity onPress={handleOTPVerify} style={[styles.button, styles.verifyButton]}>
+              <Text style={styles.buttonText}>{isLoading ? 'Verifying...' : 'Verify OTP'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleResendOTP} style={[styles.button, styles.resendButton]}>
+              <Text style={styles.buttonText}>Resend OTP</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -71,10 +85,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
   },
   otpContainer: {
     flexDirection: 'row',
@@ -94,7 +104,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     alignItems: 'center',
-    bottom: 50,
+    marginBottom: 20,
   },
   baseText: {
     fontWeight: 'bold',

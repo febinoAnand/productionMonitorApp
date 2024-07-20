@@ -1,24 +1,35 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableWithoutFeedback, Keyboard, Image } from 'react-native';
 import { Input, Button, Icon } from 'react-native-elements';
+import LoadingScreen from './loadingscreen';
 
 const RegistrationScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegistration = () => {
-    navigation.navigate('Loading', { nextScreen: 'Login' });
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      navigation.navigate('Login');
+    }, 2000);
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {isLoading ? (
+          <LoadingScreen />
+        ) : (
       <View style={styles.container}>
-        <Image
-          source={require('../../assets/hlmando.png')}
-          style={styles.image}
-        />
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/hlmando.png')}
+            style={styles.image}
+          />
+        </View>
         <Input
           placeholder="Username"
           value={username}
@@ -55,11 +66,13 @@ const RegistrationScreen = ({ navigation }) => {
           inputStyle={styles.inputStyle}
         />
         <Button
-          title="Register"
+          title={isLoading ? "Registering..." : "Register"}
           onPress={handleRegistration}
           buttonStyle={styles.button}
+          disabled={isLoading}
         />
       </View>
+      )}
     </TouchableWithoutFeedback>
   );
 };

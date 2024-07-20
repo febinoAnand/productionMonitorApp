@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { Input, Text, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-export default function SettingScreen() {
+export default function SettingScreen({ navigation }) {
   const [username, setUsername] = React.useState('');
   const [mobileNo, setMobileNo] = React.useState('');
   const [designation, setDesignation] = React.useState('');
@@ -12,7 +12,7 @@ export default function SettingScreen() {
   const [lastLogin, setLastLogin] = React.useState('');
 
   const handleLogout = () => {
-    console.log("Logging Out");
+    navigation.navigate('Login');
   };
 
   return (
