@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
+import { BaseURL } from '../../config/appconfig';
 
 const DashboardScreen = () => {
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation.UNKNOWN);
+  const [groups, setGroups] = useState([]);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -18,179 +21,70 @@ const DashboardScreen = () => {
     const orientationChangeListener = ({ orientationInfo }) => {
       setOrientation(orientationInfo.orientation);
     };
+
     const subscription = ScreenOrientation.addOrientationChangeListener(orientationChangeListener);
     return () => {
       ScreenOrientation.removeOrientationChangeListener(subscription);
     };
-  }, [orientation]);
+  }, []);
 
-  const handleSquarePress = () => {
-    navigation.navigate('WORK CENTER');
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      try {
+        const response = await axios.get(`${BaseURL}data/dashboard/`);
+        if (Array.isArray(response.data)) {
+          setGroups(response.data);
+        } else {
+          console.error('Invalid response structure:', response.data);
+          setGroups([]);
+        }
+      } catch (error) {
+        console.error('Error fetching group data:', error);
+        setGroups([]);
+      }
+    };
+
+    fetchGroupData();
+  }, []);
+
+  const handleSquarePress = (machineName) => {
+    navigation.navigate('WORK CENTER', { machineName });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>MCLM</Text>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
+        {groups.map((group) => {
+          const numberOfMachines = group.machines.length;
+          const rows = Math.ceil(numberOfMachines / 3);
+          const rectangleHeight = rows * 120;
+
+          return (
+            <View key={group.group_id} style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionHeaderText}>{group.group_name}</Text>
+              </View>
+              <View style={[styles.rectangle, { height: rectangleHeight }]}>
+                <View style={styles.squareContainer}>
+                  {group.machines.map((machine) => (
+                    <TouchableOpacity
+                      key={machine.machine_id}
+                      style={styles.square}
+                      onPress={() => handleSquarePress(machine.machine_name)}
+                    >
+                      <View style={styles.oval}>
+                        <Text style={styles.ovalText}>
+                          {machine.production_count} / {machine.target_production}
+                        </Text>
+                      </View>
+                      <Text style={styles.squareText}>{machine.machine_name}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
-                <Text style={styles.squareText}>Square 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 2</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 3</Text>
-              </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </View>
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>HSGMI</Text>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 4</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 5</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 6</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 4</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 5</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 6</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 4</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>CRRMI</Text>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 2</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 3</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 2</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 3</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 1</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>CALPI</Text>
-          </View>
-          <View style={styles.rectangle}>
-            <View style={styles.squareContainer}>
-              <TouchableOpacity style={styles.square} onPress={handleSquarePress}>
-                <View style={styles.oval}>
-                  <Text style={styles.ovalText}>Count / Targ / ct</Text>
-                </View>
-                <Text style={styles.squareText}>Square 1</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+          );
+        })}
       </View>
     </ScrollView>
   );
@@ -226,12 +120,11 @@ const styles = StyleSheet.create({
   },
   rectangle: {
     width: '100%',
-    height: 150,
     top: 10,
     backgroundColor: '#fff',
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    alignItems: 'flex-start',
+    padding: 10,
     borderRadius: 5,
     borderColor: '#ccc',
     borderWidth: 1,
@@ -245,19 +138,21 @@ const styles = StyleSheet.create({
   },
   squareContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     height: '100%',
   },
   square: {
-    width: '33%',
-    height: '100%',
+    width: '30%',
+    height: 100,
     backgroundColor: 'ghostwhite',
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+    margin: 5,
     shadowOffset: {
       width: 0,
       height: 10,
