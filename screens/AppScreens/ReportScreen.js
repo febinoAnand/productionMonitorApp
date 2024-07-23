@@ -1,18 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import { BaseURL } from '../../config/appconfig';
 
 export default function ReportScreen() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [dropdownOptions, setDropdownOptions] = useState([
-    { label: 'Machine 1', value: 'Machine 1' },
-    { label: 'Machine 2', value: 'Machine 2' },
-    { label: 'Machine 3', value: 'Machine 3' },
-  ]);
+  const [dropdownOptions, setDropdownOptions] = useState([]);
+  const [shifts, setShifts] = useState([]);
+  const [selectedShift, setSelectedShift] = useState(null);
+  const [selectedMachine, setSelectedMachine] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${BaseURL}data/production-monitor/`)
+      .then(response => {
+        const shiftData = response.data.shift_wise_data;
+
+        const uniqueMachineNames = new Set();
+        const uniqueMachineOptions = [];
+
+        shiftData.forEach(shift =>
+          shift.groups.forEach(group =>
+            group.machines.forEach(machine => {
+              if (!uniqueMachineNames.has(machine.machine_name)) {
+                uniqueMachineNames.add(machine.machine_name);
+                uniqueMachineOptions.push({
+                  label: machine.machine_name,
+                  value: machine.machine_name,
+                });
+              }
+            })
+          )
+        );
+
+        setDropdownOptions(uniqueMachineOptions);
+        setShifts(shiftData);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
 
   const handleDateChange = (event, date) => {
     if (date !== undefined) {
@@ -30,11 +62,42 @@ export default function ReportScreen() {
 
   const handleDropdownSelect = (option) => {
     setSelectedOption(option);
+    setSelectedMachine(option.value);
     setShowDropdown(false);
   };
 
   const handleSearch = () => {
-    console.log('Search button pressed');
+    if (!selectedMachine || !selectedDate) {
+      console.log('Please select both machine and date');
+      return;
+    }
+
+    const selectedDateString = selectedDate.toISOString().split('T')[0];
+
+    const filteredShifts = shifts.filter(shift => {
+      const shiftDate = new Date(shift.shift_date).toISOString().split('T')[0];
+      return shiftDate === selectedDateString;
+    }).map(shift => {
+      const filteredGroups = shift.groups.map(group => {
+        const filteredMachines = group.machines.filter(machine => machine.machine_name === selectedMachine);
+        return {
+          ...group,
+          machines: filteredMachines,
+        };
+      }).filter(group => group.machines.length > 0);
+
+      return {
+        ...shift,
+        groups: filteredGroups,
+      };
+    }).filter(shift => shift.groups.length > 0);
+
+    if (filteredShifts.length === 0) {
+      setSearchResults([]);
+      console.log('Search results:', filteredShifts);
+    } else {
+      setSearchResults(filteredShifts);
+    }
   };
 
   return (
@@ -78,93 +141,56 @@ export default function ReportScreen() {
             style={styles.datePicker}
           />
         )}
-        <View style={styles.shiftHeader}>
-          <Text style={styles.shiftHeaderText}>SHIFT 1</Text>
-        </View>
-        <View style={styles.tableContainer1}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>TIME</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>PRODUCTION COUNT ACTUAL</Text>
-            </View>
+        {searchResults.length === 0 && (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>No data available for the selected date and machine.</Text>
           </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text></Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.shiftHeader}>
-          <Text style={styles.shiftHeaderText}>SHIFT 2</Text>
-        </View>
-        <View style={styles.tableContainer1}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>TIME</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>PRODUCTION COUNT ACTUAL</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text></Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.shiftHeader}>
-          <Text style={styles.shiftHeaderText}>SHIFT 3</Text>
-        </View>
-        <View style={styles.tableContainer1}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>TIME</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>PRODUCTION COUNT ACTUAL</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text></Text>
-            </View>
-          </View>
-        </View>
+        )}
+        {searchResults.length > 0 && (
+          <>
+            {searchResults.map((shift, shiftIndex) => (
+              <View key={shiftIndex} style={styles.shiftContainer}>
+                <View style={styles.shiftHeader}>
+                  <Text style={styles.shiftHeaderText}>{shift.shift_name}</Text>
+                </View>
+                <View style={styles.tableContainer1}>
+                  <View style={styles.row}>
+                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
+                      <Text style={{ color: '#fff' }}>GROUP NAME</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
+                      <Text style={{ color: '#fff' }}>START TIME</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
+                      <Text style={{ color: '#fff' }}>END TIME</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
+                      <Text style={{ color: '#fff' }}>PRODUCTION COUNT ACTUAL</Text>
+                    </View>
+                  </View>
+                  {shift.groups.map((group, groupIndex) => (
+                    group.machines.map((machine, machineIndex) => (
+                      <View key={`${groupIndex}-${machineIndex}`} style={styles.row}>
+                        <View style={[styles.cell, styles.columnValue]}>
+                          <Text>{group.group_name}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue]}>
+                          <Text>{shift.shift_start_time}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue]}>
+                          <Text>{shift.shift_end_time}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue]}>
+                          <Text>{machine.production_count}</Text>
+                        </View>
+                      </View>
+                    ))
+                  ))}
+                </View>
+              </View>
+            ))}
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -186,22 +212,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 20,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    marginRight: 10,
-    backgroundColor: 'white',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5.84,
-    elevation: 8,
   },
   iconButton: {
     backgroundColor: 'dodgerblue',
@@ -231,6 +241,10 @@ const styles = StyleSheet.create({
   datePicker: {
     width: 100,
     marginTop: 10,
+  },
+  shiftContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
   shiftHeader: {
     width: '100%',
@@ -303,5 +317,15 @@ const styles = StyleSheet.create({
   dropdownItem: {
     paddingVertical: 10,
     paddingHorizontal: 15,
+  },
+  noDataContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: 'gray',
   },
 });
