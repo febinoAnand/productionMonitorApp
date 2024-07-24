@@ -1,7 +1,62 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Platform, ScrollView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CheckBox, Button } from 'react-native-elements';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
+
+const convertToCSV = (objArray) => {
+  const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray;
+  let str = '';
+
+  for (let i = 0; i < array.length; i++) {
+    let line = '';
+    for (let index in array[i]) {
+      if (line !== '') line += ',';
+      line += array[i][index];
+    }
+    str += line + '\r\n';
+  }
+  return str;
+};
+
+const saveCSVToFile = async (csvData, fileName) => {
+  const fileUri = FileSystem.documentDirectory + `${fileName}.csv`;
+
+  try {
+    await FileSystem.writeAsStringAsync(fileUri, csvData, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+    await Sharing.shareAsync(fileUri);
+  } catch (error) {
+    Alert.alert('Error', 'Failed to save and share CSV file');
+  }
+};
+
+const generatePDF = async (data) => {
+  const htmlContent = `
+    <h1>Report</h1>
+    <p>From Date: ${data.fromDate}</p>
+    <p>To Date: ${data.toDate}</p>
+    <p>Machine 1: ${data.machine1}</p>
+    <p>Machine 2: ${data.machine2}</p>
+    <p>Machine 3: ${data.machine3}</p>
+  `;
+
+  const options = {
+    html: htmlContent,
+    fileName: 'report',
+    directory: 'Documents',
+  };
+
+  try {
+    const file = await RNHTMLtoPDF.convert(options);
+    await Sharing.shareAsync(file.filePath);
+  } catch (error) {
+    Alert.alert('Error', 'Failed to generate and share PDF');
+  }
+};
 
 export default function DownloadScreen() {
   const [fromDate, setFromDate] = useState(new Date());
@@ -23,6 +78,27 @@ export default function DownloadScreen() {
     const currentDate = selectedDate || toDate;
     setShowToDate(Platform.OS === 'ios');
     setToDate(currentDate);
+  };
+
+  const handleDownloadCSV = () => {
+    const data = [
+      { name: 'Machine 1', status: machine1 ? 'Selected' : 'Not Selected' },
+      { name: 'Machine 2', status: machine2 ? 'Selected' : 'Not Selected' },
+      { name: 'Machine 3', status: machine3 ? 'Selected' : 'Not Selected' },
+    ];
+    const csvData = convertToCSV(data);
+    saveCSVToFile(csvData, 'machines_report');
+  };
+
+  const handleDownloadPDF = () => {
+    const data = {
+      fromDate: fromDate.toDateString(),
+      toDate: toDate.toDateString(),
+      machine1: machine1 ? 'Selected' : 'Not Selected',
+      machine2: machine2 ? 'Selected' : 'Not Selected',
+      machine3: machine3 ? 'Selected' : 'Not Selected',
+    };
+    generatePDF(data);
   };
 
   return (
@@ -91,10 +167,12 @@ export default function DownloadScreen() {
         <Button
           title="Download PDF"
           buttonStyle={[styles.downloadButton, { backgroundColor: 'dodgerblue' }]}
+          onPress={handleDownloadPDF}
         />
         <Button
           title="Download CSV"
           buttonStyle={[styles.downloadButton, { backgroundColor: 'dodgerblue' }]}
+          onPress={handleDownloadCSV}
         />
       </View>
     </ScrollView>

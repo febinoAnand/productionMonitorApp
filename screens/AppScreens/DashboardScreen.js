@@ -55,32 +55,28 @@ const DashboardScreen = () => {
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         {groups.map((group) => {
-          const numberOfMachines = group.machines.length;
-          const rows = Math.ceil(numberOfMachines / 3);
-          const rectangleHeight = rows * 120;
+          if (group.machines.length === 0) return null;
 
           return (
             <View key={group.group_id} style={styles.sectionContainer}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionHeaderText}>{group.group_name}</Text>
               </View>
-              <View style={[styles.rectangle, { height: rectangleHeight }]}>
-                <View style={styles.squareContainer}>
-                  {group.machines.map((machine) => (
-                    <TouchableOpacity
-                      key={machine.machine_id}
-                      style={styles.square}
-                      onPress={() => handleSquarePress(machine.machine_name)}
-                    >
-                      <View style={styles.oval}>
-                        <Text style={styles.ovalText}>
-                          {machine.production_count} / {machine.target_production}
-                        </Text>
-                      </View>
-                      <Text style={styles.squareText}>{machine.machine_name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+              <View style={styles.squareContainer}>
+                {group.machines.map((machine) => (
+                  <TouchableOpacity
+                    key={machine.machine_id}
+                    style={styles.square}
+                    onPress={() => handleSquarePress(machine.machine_name)}
+                  >
+                    <Text style={styles.squareText}>{machine.machine_name}</Text>
+                    <View style={styles.oval}>
+                      <Text style={styles.ovalText}>
+                        {machine.production_count} / {machine.target_production}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
           );
@@ -118,30 +114,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  rectangle: {
-    width: '100%',
-    top: 10,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    padding: 10,
-    borderRadius: 5,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5.84,
-    elevation: 8,
-  },
   squareContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    height: '100%',
+    marginTop: 10,
   },
   square: {
     width: '30%',
