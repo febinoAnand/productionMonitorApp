@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const CustomAlert = ({ visible, onClose, message }) => {
+const CustomSuccessAlert = ({ visible, onClose, message }) => {
   return (
     <Modal
       visible={visible}
@@ -12,7 +12,7 @@ const CustomAlert = ({ visible, onClose, message }) => {
     >
       <View style={styles.overlay}>
         <View style={styles.alertContainer}>
-          <MaterialIcons name="error" size={50} color="white" style={styles.icon} />
+          <MaterialIcons name="check-circle" size={50} color="white" style={styles.icon} />
           <Text style={styles.message}>{message}</Text>
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>OK</Text>
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   alertContainer: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#FF6E00',
     width: 300,
     height: 180,
     padding: 20,
@@ -55,9 +55,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    color: 'dodgerblue',
+    color: '#FF6E00',
     fontWeight: 'bold',
   },
 });
 
-export default CustomAlert;
+export default CustomSuccessAlert;
