@@ -17,32 +17,28 @@ export default function ReportScreen() {
   const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
+    axios.get(`${BaseURL}devices/machine/`)
+      .then(response => {
+        const machineData = response.data;
+
+        const machineOptions = machineData.map(machine => ({
+          label: machine.machine_name,
+          value: machine.machine_name,
+        }));
+
+        setDropdownOptions(machineOptions);
+      })
+      .catch(error => {
+        console.error('Error fetching machine data:', error);
+      });
+
     axios.get(`${BaseURL}data/production-monitor/`)
       .then(response => {
         const shiftData = response.data.shift_wise_data;
-
-        const uniqueMachineNames = new Set();
-        const uniqueMachineOptions = [];
-
-        shiftData.forEach(shift =>
-          shift.groups.forEach(group =>
-            group.machines.forEach(machine => {
-              if (!uniqueMachineNames.has(machine.machine_name)) {
-                uniqueMachineNames.add(machine.machine_name);
-                uniqueMachineOptions.push({
-                  label: machine.machine_name,
-                  value: machine.machine_name,
-                });
-              }
-            })
-          )
-        );
-
-        setDropdownOptions(uniqueMachineOptions);
         setShifts(shiftData);
       })
       .catch(error => {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching shift data:', error);
       });
   }, []);
 

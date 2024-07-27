@@ -267,6 +267,7 @@ export default function Signup({ navigation }) {
                             placeholder='Mobile No'
                             value={mobileNo}
                             onChangeText={setMobileNumber}
+                            keyboardType='phone-pad'
                         />
                     </View>
                     <Button
