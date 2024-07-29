@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MobileApp",
-    "slug": "MobileApp",
+    "slug": "productionmonitor",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,6 +22,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "667f9ce3-662b-4e8a-a3a8-5b1f53d50770"
+      }
+    },
+    "owner": "richianand1990"
   }
 }
