@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Image, StyleSheet, ScrollView, Platform } from "react-native";
 import { SimpleLineIcons, FontAwesome5, Feather, MaterialIcons } from '@expo/vector-icons';
-import LoadingScreen from './loadingscreen';
+import LoadingScreen from './screenloading';
 import CustomAlert from './customalert';
 import SuccessAlert from './successalert';
 import NetInfo from "@react-native-community/netinfo";

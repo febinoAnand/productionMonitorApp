@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Keyboard,TouchableWithoutFeedback} from 'react-native';
 import NetInfo from "@react-native-community/netinfo";
-import LoadingScreen from './loadingscreen';
+import LoadingScreen from './screenloading';
 import CustomAlert from './customalert';
 import { BaseURL, serverTimeoutSeconds } from '../../config/appconfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';

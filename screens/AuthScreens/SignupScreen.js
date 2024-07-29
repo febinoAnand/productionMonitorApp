@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet, Image, ScrollView, Text, ToastAndroid } fr
 import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import { Button } from 'react-native-elements';
 import NetInfo from '@react-native-community/netinfo';
-import LoadingScreen from './loadingscreen'; 
+import LoadingScreen from './screenloading'; 
 import CustomAlert from './customalert';
 import CustomAlertprompt from './customalertprompt';
 import * as SecureStore from 'expo-secure-store';
