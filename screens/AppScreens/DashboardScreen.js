@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
@@ -31,7 +32,12 @@ const DashboardScreen = () => {
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
-        const response = await axios.get(`${BaseURL}data/dashboard/`);
+        const token = await AsyncStorage.getItem('token');
+        const response = await axios.get(`${BaseURL}data/dashboard/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
         if (Array.isArray(response.data)) {
           setGroups(response.data);
         } else {
@@ -53,6 +59,7 @@ const DashboardScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
+      <View style={{ height: 20 }}></View>
       <View style={styles.container}>
         {groups.map((group) => {
           if (group.machines.length === 0) return null;

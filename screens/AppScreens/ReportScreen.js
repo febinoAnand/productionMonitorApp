@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
@@ -17,9 +18,13 @@ export default function ReportScreen() {
   const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
-    axios.get(`${BaseURL}devices/machine/`)
-      .then(response => {
-        const machineData = response.data;
+    const fetchData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const machineResponse = await axios.get(`${BaseURL}devices/machine/`, {
+          headers: { Authorization: `Token ${token}` }
+        });
+        const machineData = machineResponse.data;
 
         const machineOptions = machineData.map(machine => ({
           label: machine.machine_name,
@@ -27,19 +32,18 @@ export default function ReportScreen() {
         }));
 
         setDropdownOptions(machineOptions);
-      })
-      .catch(error => {
-        console.error('Error fetching machine data:', error);
-      });
 
-    axios.get(`${BaseURL}data/production-monitor/`)
-      .then(response => {
-        const shiftData = response.data.shift_wise_data;
+        const shiftResponse = await axios.get(`${BaseURL}data/production-monitor/`, {
+          headers: { Authorization: `Token ${token}` }
+        });
+        const shiftData = shiftResponse.data.shift_wise_data;
         setShifts(shiftData);
-      })
-      .catch(error => {
-        console.error('Error fetching shift data:', error);
-      });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleDateChange = (event, date) => {
@@ -229,6 +233,7 @@ const styles = StyleSheet.create({
   datePickerText: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 10,
     marginRight: 10,
   },
   calendarIcon: {
@@ -321,7 +326,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   noDataText: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'gray',
   },
 });

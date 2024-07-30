@@ -5,25 +5,32 @@ import { CheckBox, Button } from 'react-native-elements';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
-const fetchMachines = async () => {
+const fetchGroups = async () => {
   try {
-    const response = await axios.get(`${BaseURL}devices/machine/`);
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get(`${BaseURL}devices/machinegroup/`, {
+      headers: { Authorization: `Token ${token}` },
+    });
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch machines:', error);
+    console.error('Failed to fetch groups:', error);
     return [];
   }
 };
 
 const fetchProductionData = async (machineIds, fromDate, toDate) => {
   try {
+    const token = await AsyncStorage.getItem('token');
     const response = await axios.post(`${BaseURL}data/table-report/`, {
       machine_ids: machineIds,
       from_date: fromDate.toISOString().split('T')[0],
       to_date: toDate.toISOString().split('T')[0],
+    }, {
+      headers: { Authorization: `Token ${token}` },
     });
     console.log(response.data);
     return response.data;
@@ -152,21 +159,23 @@ export default function DownloadScreen() {
   const [toDate, setToDate] = useState(new Date());
   const [showFromDate, setShowFromDate] = useState(false);
   const [showToDate, setShowToDate] = useState(false);
-  const [machines, setMachines] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [selectedMachines, setSelectedMachines] = useState({});
 
   useEffect(() => {
-    const loadMachines = async () => {
-      const machinesList = await fetchMachines();
-      setMachines(machinesList);
-      const initialSelection = machinesList.reduce((acc, machine) => {
-        acc[machine.id] = false;
-        return acc;
-      }, {});
+    const loadGroups = async () => {
+      const groupsList = await fetchGroups();
+      setGroups(groupsList);
+      const initialSelection = {};
+      groupsList.forEach(group => {
+        group.machines.forEach(machine => {
+          initialSelection[machine.machine_id] = false;
+        });
+      });
       setSelectedMachines(initialSelection);
     };
 
-    loadMachines();
+    loadGroups();
   }, []);
 
   const onChangeFromDate = (event, selectedDate) => {
@@ -182,9 +191,7 @@ export default function DownloadScreen() {
   };
 
   const handleDownloadCSV = async () => {
-    const selectedMachineIds = machines
-      .filter(machine => selectedMachines[machine.id])
-      .map(machine => machine.machine_id);
+    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
   
     if (selectedMachineIds.length === 0) {
       Alert.alert('Error', 'No machines selected');
@@ -203,9 +210,7 @@ export default function DownloadScreen() {
   };
   
   const handleDownloadPDF = async () => {
-    const selectedMachineIds = machines
-      .filter(machine => selectedMachines[machine.id])
-      .map(machine => machine.machine_id);
+    const selectedMachineIds = Object.keys(selectedMachines).filter(machineId => selectedMachines[machineId]);
   
     if (selectedMachineIds.length === 0) {
       Alert.alert('Error', 'No machines selected');
@@ -264,32 +269,35 @@ export default function DownloadScreen() {
           <Text style={styles.dateText}>{toDate.toDateString()}</Text>
         </View>
       </View>
-      <View style={styles.machineBox}>
-        <Text style={styles.header}>Machines</Text>
-        <View style={styles.machineContainer}>
-          {machines.map(machine => (
+      <Text style={styles.groupLabel}>Select Machines:</Text>
+      {groups.map((group, groupIndex) => (
+        <View key={groupIndex} style={styles.groupContainer}>
+          <Text style={styles.groupName}>{group.group_name}</Text>
+          {group.machines.map(machine => (
             <CheckBox
-              key={machine.id}
+              key={machine.machine_id}
               title={`${machine.machine_name} - ${machine.machine_id}`}
-              checked={selectedMachines[machine.id] || false}
-              onPress={() => setSelectedMachines(prevState => ({
-                ...prevState,
-                [machine.id]: !prevState[machine.id],
-              }))}
+              checked={selectedMachines[machine.machine_id]}
+              onPress={() =>
+                setSelectedMachines({
+                  ...selectedMachines,
+                  [machine.machine_id]: !selectedMachines[machine.machine_id],
+                })
+              }
             />
           ))}
         </View>
-      </View>
-      <View style={styles.downloadContainer}>
+      ))}
+      <View style={styles.buttonContainer}>
         <Button
-          title="Download PDF"
-          buttonStyle={[styles.downloadButton, { backgroundColor: 'dodgerblue' }]}
-          onPress={handleDownloadPDF}
+          onPress={handleDownloadCSV}
+          title="Download CSV"
+          buttonStyle={styles.button}
         />
         <Button
-          title="Download CSV"
-          buttonStyle={[styles.downloadButton, { backgroundColor: 'dodgerblue' }]}
-          onPress={handleDownloadCSV}
+          onPress={handleDownloadPDF}
+          title="Download PDF"
+          buttonStyle={styles.button}
         />
       </View>
     </ScrollView>
@@ -301,68 +309,63 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
     backgroundColor: 'ghostwhite',
+    paddingVertical: 20,
   },
   dateContainer: {
+    width: '90%',
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
   datePicker: {
     flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   label: {
     fontSize: 16,
-    fontWeight: 'bold',
     marginBottom: 10,
-  },
-  dateText: {
-    fontSize: 16,
-    marginTop: 10,
-  },
-  machineBox: {
-    width: '100%',
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'white',
-    borderRadius: 10,
-    marginBottom: 20,
-    backgroundColor: "white",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5.84,
-    elevation: 8,
-  },
-  header: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  machineContainer: {
-    width: '100%',
-  },
-  downloadContainer: {
-    marginTop: 20,
-    width: '100%',
-    alignItems: 'center',
-  },
-  downloadButton: {
-    borderRadius: 50,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginTop: 10,
+    color: 'dodgerblue',
   },
   button: {
     backgroundColor: 'dodgerblue',
-    borderRadius: 50,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+  },
+  dateText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: 'dodgerblue',
+  },
+  groupLabel: {
+    fontSize: 18,
     marginBottom: 10,
+    color: 'dodgerblue',
+  },
+  groupContainer: {
+    width: '90%',
+    marginBottom: 20,
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  groupName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: 'dodgerblue',
+  },
+  buttonContainer: {
+    width: '90%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
   },
 });
