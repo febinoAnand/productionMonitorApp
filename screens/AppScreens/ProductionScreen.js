@@ -88,7 +88,13 @@ const ProductionScreen = () => {
                         <Text>{machine.machine_name}</Text>
                       </View>
                       <View style={[styles.cell, styles.columnValue]}>
-                        <Text>{machine.shifts}</Text>
+                        {machine.shifts.length > 0 ? (
+                          machine.shifts.map((shift, shiftIndex) => (
+                            <Text key={shiftIndex}>{shift.shift_name}</Text>
+                          ))
+                        ) : (
+                          <Text>No Shifts</Text>
+                        )}
                       </View>
                     </View>
                   ))}
