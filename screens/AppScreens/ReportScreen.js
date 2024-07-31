@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
-export default function ReportScreen() {
+const ReportScreen = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -103,6 +103,7 @@ export default function ReportScreen() {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+        <View style={{ height: 20 }}></View>
         <View style={styles.inputContainer}>
           <TouchableOpacity
             style={styles.datePickerButton}
@@ -141,60 +142,63 @@ export default function ReportScreen() {
             style={styles.datePicker}
           />
         )}
-        {searchResults.length === 0 && (
-          <View style={styles.noDataContainer}>
-            <Text style={styles.noDataText}>No data available for the selected date and machine.</Text>
-          </View>
-        )}
-        {searchResults.length > 0 && (
-          <>
-            {searchResults.map((shift, shiftIndex) => (
-              <View key={shiftIndex} style={styles.shiftContainer}>
-                <View style={styles.shiftHeader}>
-                  <Text style={styles.shiftHeaderText}>{shift.shift_name}</Text>
-                </View>
-                <View style={styles.tableContainer1}>
-                  <View style={styles.row}>
-                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-                      <Text style={{ color: '#fff' }}>GROUP NAME</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-                      <Text style={{ color: '#fff' }}>START TIME</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-                      <Text style={{ color: '#fff' }}>END TIME</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-                      <Text style={{ color: '#fff' }}>PRODUCTION COUNT ACTUAL</Text>
-                    </View>
-                  </View>
-                  {shift.groups.map((group, groupIndex) => (
-                    group.machines.map((machine, machineIndex) => (
-                      <View key={`${groupIndex}-${machineIndex}`} style={styles.row}>
-                        <View style={[styles.cell, styles.columnValue]}>
-                          <Text>{group.group_name}</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnValue]}>
-                          <Text>{shift.shift_start_time}</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnValue]}>
-                          <Text>{shift.shift_end_time}</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnValue]}>
-                          <Text>{machine.production_count}</Text>
-                        </View>
+        {searchResults.length === 0 ? (
+          <Text style={styles.messageText}>No data available.</Text>
+        ) : (
+          searchResults.map((shift, shiftIndex) => (
+            <View key={shiftIndex} style={styles.groupContainer}>
+              <Text style={styles.groupHeader}>{shift.shift_name}</Text>
+              <View style={styles.tableContainer}>
+                <ScrollView horizontal>
+                  <View style={styles.table}>
+                    <View style={[styles.row, styles.headerRow]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
+                        <Text style={styles.headerText}>Si.No</Text>
                       </View>
-                    ))
-                  ))}
-                </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 160 }]}>
+                        <Text style={styles.headerText}>Work Center</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Shift Start</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Shift End</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Production Count</Text>
+                      </View>
+                    </View>
+                    {shift.groups.map((group, groupIndex) => (
+                      group.machines.map((machine, machineIndex) => (
+                        <View key={machineIndex} style={styles.row}>
+                          <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
+                            <Text>{machineIndex + 1}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
+                            <Text>{machine.machine_name}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                            <Text>{shift.shift_start_time}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                            <Text>{shift.shift_end_time}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                            <Text>{machine.production_count}</Text>
+                          </View>
+                        </View>
+                      ))
+                    ))}
+                  </View>
+                </ScrollView>
               </View>
-            ))}
-          </>
+            </View>
+          ))
         )}
       </View>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   scrollContainer: {
@@ -243,21 +247,18 @@ const styles = StyleSheet.create({
     width: 100,
     marginTop: 10,
   },
-  shiftContainer: {
+  groupContainer: {
     width: '100%',
     marginBottom: 20,
   },
-  shiftHeader: {
-    width: '100%',
-    alignItems: 'flex-start',
-    marginTop: 20,
-  },
-  shiftHeaderText: {
-    fontSize: 18,
+  groupHeader: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: 'dodgerblue',
+    padding: 10,
+    borderRadius: 5,
   },
-  tableContainer1: {
+  tableContainer: {
     width: '100%',
     justifyContent: 'flex-start',
     alignItems: 'stretch',
@@ -268,6 +269,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
     backgroundColor: '#fff',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 10,
@@ -276,57 +278,56 @@ const styles = StyleSheet.create({
     shadowRadius: 5.84,
     elevation: 8,
   },
+  table: {
+    minWidth: '100%',
+  },
   row: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  },
+  headerRow: {
+    borderBottomWidth: 2,
+    borderBottomColor: 'dodgerblue',
   },
   cell: {
-    flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
-  },
-  columnHeader: {
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderRightWidth: 1,
     borderRightColor: '#ccc',
   },
+  columnHeader: {
+    backgroundColor: 'dodgerblue',
+  },
   columnValue: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    backgroundColor: '#fff',
+  },
+  headerText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  messageText: {
+    fontSize: 16,
+    color: 'grey',
+    textAlign: 'center',
+    marginTop: 20,
   },
   dropdownContainer: {
     position: 'absolute',
     top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
-    borderRadius: 5,
+    backgroundColor: 'white',
     borderWidth: 1,
     borderColor: '#ccc',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5.84,
-    elevation: 8,
-    zIndex: 100,
+    borderRadius: 5,
+    zIndex: 1,
   },
   dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-  },
-  noDataContainer: {
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  noDataText: {
-    fontSize: 14,
-    color: 'gray',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 });
+
+export default ReportScreen;
