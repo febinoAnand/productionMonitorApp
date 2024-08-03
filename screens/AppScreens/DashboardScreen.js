@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
 const DashboardScreen = () => {
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation.UNKNOWN);
   const [groups, setGroups] = useState([]);
+  const intervalRef = useRef(null);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -29,28 +30,72 @@ const DashboardScreen = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchGroupData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const response = await axios.get(`${BaseURL}data/dashboard/`, {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-        if (Array.isArray(response.data)) {
-          setGroups(response.data);
-        } else {
-          console.error('Invalid response structure:', response.data);
-          setGroups([]);
-        }
-      } catch (error) {
-        console.error('Error fetching group data:', error);
-        setGroups([]);
-      }
-    };
+  const fetchGroupData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const groupsResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
 
+      const productionResponse = await axios.get(`${BaseURL}data/dashboard/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      const productionData = productionResponse.data;
+
+      const updatedGroups = groupsResponse.data.map(group => {
+        const productionGroup = productionData.find(pGroup => pGroup.group_id === group.group_id);
+
+        return {
+          ...group,
+          machines: group.machines.map(machine => {
+            const productionMachine = productionGroup?.machines.find(pMachine => pMachine.machine_id === machine.machine_id) || {};
+            return {
+              ...machine,
+              production_count: productionMachine.production_count || 0,
+              target_production: productionMachine.target_production || 0,
+            };
+          }),
+        };
+      });
+
+      setGroups(updatedGroups);
+    } catch (error) {
+      console.error('Error fetching group data:', error);
+      setGroups([]);
+    }
+  };
+
+  const startFetchingData = () => {
+    console.log('Starting data fetch interval');
     fetchGroupData();
+    intervalRef.current = setInterval(() => {
+      console.log('Fetching data...');
+      fetchGroupData();
+    }, 3000);
+  };
+  
+  const stopFetchingData = () => {
+    if (intervalRef.current) {
+      console.log('Stopping data fetch interval');
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      startFetchingData();
+      return () => {
+        stopFetchingData();
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    return () => {
+      stopFetchingData();
+    };
   }, []);
 
   const handleSquarePress = (machineName) => {

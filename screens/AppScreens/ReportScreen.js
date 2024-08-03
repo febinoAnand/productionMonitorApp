@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ReportScreen = () => {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -13,7 +14,6 @@ const ReportScreen = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [shifts, setShifts] = useState([]);
-  const [selectedShift, setSelectedShift] = useState(null);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
 
@@ -38,6 +38,7 @@ const ReportScreen = () => {
         });
         const shiftData = shiftResponse.data.shift_wise_data;
         setShifts(shiftData);
+        setSearchResults(shiftData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -100,6 +101,18 @@ const ReportScreen = () => {
     }
   };
 
+  const handleReset = () => {
+    setSelectedOption(null);
+    setSelectedDate(new Date());
+    setSearchResults(shifts);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      handleReset();
+    }, [shifts])
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -145,55 +158,57 @@ const ReportScreen = () => {
         {searchResults.length === 0 ? (
           <Text style={styles.messageText}>No data available.</Text>
         ) : (
-          searchResults.map((shift, shiftIndex) => (
-            <View key={shiftIndex} style={styles.groupContainer}>
-              <Text style={styles.groupHeader}>{shift.shift_name}</Text>
-              <View style={styles.tableContainer}>
-                <ScrollView horizontal>
-                  <View style={styles.table}>
-                    <View style={[styles.row, styles.headerRow]}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                        <Text style={styles.headerText}>Si.No</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 160 }]}>
-                        <Text style={styles.headerText}>Work Center</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Shift Start</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Shift End</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Production Count</Text>
-                      </View>
-                    </View>
-                    {shift.groups.map((group, groupIndex) => (
-                      group.machines.map((machine, machineIndex) => (
-                        <View key={machineIndex} style={styles.row}>
-                          <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
-                            <Text>{machineIndex + 1}</Text>
-                          </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
-                            <Text>{machine.machine_name}</Text>
-                          </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                            <Text>{shift.shift_start_time}</Text>
-                          </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                            <Text>{shift.shift_end_time}</Text>
-                          </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                            <Text>{machine.production_count}</Text>
-                          </View>
+          searchResults.map((shift, shiftIndex) => {
+            let siNoCounter = 1;
+            return (
+              <View key={shiftIndex} style={styles.groupContainer}>
+                <View style={{ height: 20 }}></View>
+                <Text style={styles.groupHeader}>{shift.shift_name || `Shift ${shift.shift_number}`}</Text>
+                <View style={styles.tableContainer}>
+                  <ScrollView horizontal>
+                    <View style={styles.table}>
+                      <View style={[styles.row, styles.headerRow]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
+                          <Text style={styles.headerText}>Si.No</Text>
                         </View>
-                      ))
+                        <View style={[styles.cell, styles.columnHeader, { width: 160 }]}>
+                          <Text style={styles.headerText}>Group Name</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                          <Text style={styles.headerText}>Shift Start</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                          <Text style={styles.headerText}>Shift End</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                          <Text style={styles.headerText}>Production Count</Text>
+                        </View>
+                      </View>
+                      {shift.groups.map((group, groupIndex) => (
+                      <View key={groupIndex} style={styles.row}>
+                        <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
+                          <Text>{groupIndex + 1}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
+                          <Text>{group.group_name}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                          <Text>{shift.shift_start_time}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                          <Text>{shift.shift_end_time}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                          <Text>0</Text>
+                        </View>
+                      </View>
                     ))}
-                  </View>
-                </ScrollView>
+                    </View>
+                  </ScrollView>
+                </View>
               </View>
-            </View>
-          ))
+            );
+          })
         )}
       </View>
     </ScrollView>
@@ -266,8 +281,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    marginTop: 10,
-    marginBottom: 20,
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: {
