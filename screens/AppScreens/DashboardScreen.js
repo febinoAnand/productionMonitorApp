@@ -36,16 +36,16 @@ const DashboardScreen = () => {
       const groupsResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
         headers: { Authorization: `Token ${token}` },
       });
-
+  
       const productionResponse = await axios.get(`${BaseURL}data/dashboard/`, {
         headers: { Authorization: `Token ${token}` },
       });
-
+  
       const productionData = productionResponse.data;
-
+  
       const updatedGroups = groupsResponse.data.map(group => {
         const productionGroup = productionData.find(pGroup => pGroup.group_id === group.group_id);
-
+  
         return {
           ...group,
           machines: group.machines.map(machine => {
@@ -59,7 +59,7 @@ const DashboardScreen = () => {
         };
       });
 
-      setGroups(updatedGroups);
+      setGroups(updatedGroups.reverse());
     } catch (error) {
       console.error('Error fetching group data:', error);
       setGroups([]);

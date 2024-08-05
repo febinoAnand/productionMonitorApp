@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity } from 'react-native';
+import { Button } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Button, Icon } from 'react-native-elements';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
@@ -10,21 +11,29 @@ import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
 export default function DownloadScreen() {
-  const [fromDate, setFromDate] = useState(new Date());
-  const [toDate, setToDate] = useState(new Date());
-  const [showFromDate, setShowFromDate] = useState(false);
-  const [showToDate, setShowToDate] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownOptions, setDropdownOptions] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const onChangeFromDate = (event, selectedDate) => {
-    const currentDate = selectedDate || fromDate;
-    setShowFromDate(Platform.OS === 'ios');
-    setFromDate(currentDate);
-  };
+  useEffect(() => {
+    fetchDropdownOptions();
+  }, []);
 
-  const onChangeToDate = (event, selectedDate) => {
-    const currentDate = selectedDate || toDate;
-    setShowToDate(Platform.OS === 'ios');
-    setToDate(currentDate);
+  const fetchDropdownOptions = async () => {
+    try {
+      const response = await axios.get(`${BaseURL}devices/machine/`);
+      const machines = response.data;
+      const options = machines.map(machine => ({
+        label: machine.machine_name,
+        value: machine.machine_id,
+      }));
+      setDropdownOptions(options);
+    } catch (error) {
+      console.error('Error fetching dropdown options:', error);
+      Alert.alert('Error', 'Failed to fetch dropdown options.');
+    }
   };
 
   const fetchDataAndGeneratePDF = async (isSummaryReport = true) => {
@@ -52,6 +61,35 @@ export default function DownloadScreen() {
   };
 
   const generateSummaryReportHtml = (data) => {
+    const groupedData = data.shift_wise_data.reduce((acc, shift) => {
+        shift.groups.forEach(group => {
+            if (!acc[group.group_name]) {
+                acc[group.group_name] = [];
+            }
+            acc[group.group_name].push({
+                shift_date: shift.shift_date,
+                shift_start_time: shift.shift_start_time,
+                shift_end_time: shift.shift_end_time,
+                shift_name: shift.shift_name || null,
+                shift_number: shift.shift_number,
+                machines: group.machines
+            });
+        });
+        return acc;
+    }, {});
+
+    const shiftHeaders = new Set();
+    Object.values(groupedData).forEach(shifts => {
+        shifts.forEach(shift => {
+            if (shift.shift_name && shift.shift_name !== '0') {
+                shiftHeaders.add(shift.shift_name);
+            } 
+            if (shift.shift_number && shift.shift_number !== '0') {
+                shiftHeaders.add(`Shift ${shift.shift_number}`);
+            }
+        });
+    });
+
     const htmlContent = `
       <html>
         <head>
@@ -61,40 +99,41 @@ export default function DownloadScreen() {
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background-color: dodgerblue; color: white; }
             h1 { text-align: center; }
+            h2 { margin-top: 20px; }
           </style>
         </head>
         <body>
           <h1>Summary Report</h1>
-          <table>
-            <tr>
-              <th>Date</th>
-              <th>Shift</th>
-              <th>Work Center</th>
-              <th>Shift Start</th>
-              <th>Shift End</th>
-              <th>Production Count</th>
-            </tr>
-            ${data.shift_wise_data.map(shift => `
-              ${shift.groups.map(group => `
-                ${group.machines.map(machine => `
-                  <tr>
-                    <td>${shift.shift_date}</td>
-                    <td>${shift.shift_name}</td>
-                    <td>${machine.machine_name}</td>
-                    <td>${shift.shift_start_time}</td>
-                    <td>${shift.shift_end_time}</td>
-                    <td>${machine.production_count}</td>
-                  </tr>
-                `).join('')}
-              `).join('')}
-            `).join('')}
-          </table>
+          ${Object.keys(groupedData).map(groupName => {
+            return `
+              <h2>Group: ${groupName}</h2>
+              <table>
+                <tr>
+                  <th>SI. No.</th>
+                  <th>Machine Name</th>
+                  ${Array.from(shiftHeaders).map(header => `<th>${header}</th>`).join('')}
+                </tr>
+                ${groupedData[groupName].flatMap((shift, shiftIndex) => 
+                  shift.machines.map((machine, machineIndex) => `
+                    <tr>
+                      <td>${machineIndex + 1}</td>
+                      <td>${machine.machine_name}</td>
+                      ${Array.from(shiftHeaders).map(header => {
+                          const shiftData = shift.shift_name === header || `Shift ${shift.shift_number}` === header ? 'Data Available' : '';
+                          return `<td>${shiftData}</td>`;
+                      }).join('')}
+                    </tr>
+                  `)
+                ).join('')}
+              </table>
+            `;
+          }).join('')}
         </body>
       </html>
     `;
-
+  
     return htmlContent;
-  };
+};
 
   const generateShiftWiseReportHtml = (data) => {
     const shiftsGroupedByShiftName = data.shift_wise_data.reduce((acc, shift) => {
@@ -104,7 +143,7 @@ export default function DownloadScreen() {
       acc[shift.shift_name].push(shift);
       return acc;
     }, {});
-  
+
     const htmlContent = `
       <html>
         <head>
@@ -147,66 +186,83 @@ export default function DownloadScreen() {
         </body>
       </html>
     `;
-  
+
     return htmlContent;
+  };
+
+  const handleDropdownSelect = (option) => {
+    setSelectedOption(option);
+    setShowDropdown(false);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleDateChange = (event, date) => {
+    setShowDatePicker(false);
+    if (date) setSelectedDate(date);
+  };
+
+  const handleSearch = () => {
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.dateContainer}>
-        <View style={styles.datePicker}>
-          <Text style={styles.label}>From Date:</Text>
-          <Button
-            onPress={() => setShowFromDate(true)}
-            title="Select From Date"
-            buttonStyle={styles.button}
-          />
-          {showFromDate && (
-            <DateTimePicker
-              testID="dateTimePickerFrom"
-              value={fromDate}
-              mode="date"
-              display="default"
-              onChange={onChangeFromDate}
-              textColor="dodgerblue"
-            />
-          )}
-          <Text style={styles.dateText}>{fromDate.toDateString()}</Text>
-        </View>
-        <View style={styles.datePicker}>
-          <Text style={styles.label}>To Date:</Text>
-          <Button
-            onPress={() => setShowToDate(true)}
-            title="Select To Date"
-            buttonStyle={styles.button}
-          />
-          {showToDate && (
-            <DateTimePicker
-              testID="dateTimePickerTo"
-              value={toDate}
-              mode="date"
-              display="default"
-              onChange={onChangeToDate}
-              textColor="dodgerblue"
-            />
-          )}
-          <Text style={styles.dateText}>{toDate.toDateString()}</Text>
-        </View>
+      <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={styles.datePickerButton}
+          onPress={toggleDropdown}
+        >
+          <Text style={styles.datePickerText}>{selectedOption ? selectedOption.label : 'Select Machine'}</Text>
+          <Icon name="caret-down" size={20} color="white" style={styles.calendarIcon} />
+        </TouchableOpacity>
+        {showDropdown && (
+          <ScrollView style={styles.dropdownContainer}>
+            {dropdownOptions.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownItem}
+                onPress={() => handleDropdownSelect(option)}
+              >
+                <Text>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+        <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
+          <Text style={styles.datePickerText}>{selectedDate.toDateString()}</Text>
+          <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={handleSearch}>
+          <Icon name="search" size={20} color="white" />
+        </TouchableOpacity>
       </View>
-      <View style={{ height: 20 }}></View>
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+          style={styles.datePicker}
+        />
+      )}
+      <View style={{ height: 100 }}></View>
+      <View style={styles.buttonContainer}>
       <Button
         title="SUMMARY REPORT"
-        icon={<Icon name="download" type="font-awesome" style={{ marginRight: 10 }} color="white" />}
+        icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
         buttonStyle={styles.button}
         onPress={() => fetchDataAndGeneratePDF(true)}
       />
       <View style={{ height: 10 }}></View>
       <Button
         title="SHIFT WISE REPORT"
-        icon={<Icon name="download" type="font-awesome" style={{ marginRight: 10 }} color="white" />}
+        icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
         buttonStyle={styles.button}
         onPress={() => fetchDataAndGeneratePDF(false)}
       />
+      </View>
     </ScrollView>
   );
 }
@@ -225,10 +281,59 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
+  datePickerButton: {
+    flexDirection: 'row',
+    backgroundColor: 'dodgerblue',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginLeft: 10,
+    alignItems: 'center',
+  },
+  datePickerText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 10,
+    marginRight: 10,
+  },
   datePicker: {
-    flex: 1,
+    width: 100,
+    marginTop: 10,
+  },
+  iconButton: {
+    backgroundColor: 'dodgerblue',
+    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  dropdownContainer: {
+    position: 'absolute',
+    width: '60%',
+    maxHeight: 200,
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    zIndex: 1,
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    alignItems: 'center'
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  calendarIcon: {
+    marginLeft: 'auto',
   },
   label: {
     fontSize: 16,
@@ -241,9 +346,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
-  dateText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: 'black',
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 20,
   },
 });

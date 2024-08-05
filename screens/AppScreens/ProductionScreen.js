@@ -12,52 +12,29 @@ const ProductionScreen = () => {
     const fetchData = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        const productionResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
+        const productionResponse = await axios.get(`${BaseURL}data/production/`, {
           headers: { Authorization: `Token ${token}` }
         });
-        const productionData = productionResponse.data || [];
+        let productionData = productionResponse.data.group_data || [];
+        productionData = productionData.reverse();
         setProductionData(productionData);
-  
-        const shiftResponse = await axios.get(`${BaseURL}devices/shifttimings/`, {
-          headers: { Authorization: `Token ${token}` }
-        });
-        const shiftData = shiftResponse.data || [];
-        const shifts = shiftData.map(shift => 
-          shift.shift_name ? shift.shift_name : `${shift.shift_number}`
-        );
-        setShiftHeaders([...new Set(shifts)]);
+
+        if (productionData.length > 0 && productionData[0].machines.length > 0) {
+          const firstMachineShifts = Object.values(productionData[0].machines[0].shifts);
+          const shifts = firstMachineShifts
+            .filter(shift => shift.shift_name !== '0' && shift.shift_number !== 0)
+            .map(shift =>
+              shift.shift_name ? shift.shift_name : `${shift.shift_number}`
+            );
+          setShiftHeaders([...new Set(shifts)]);
+        }
       } catch (error) {
         console.error(error);
       }
     };
-  
+
     fetchData();
   }, []);
-
-  const calculateTotals = () => {
-    const totalCounts = {};
-    const totalTargets = {};
-  
-    productionData.forEach(group => {
-      if (group.machines) {
-        group.machines.forEach(machine => {
-          if (machine.shifts) {
-            machine.shifts.forEach(shift => {
-              const shiftHeader = shift.shift_name ? shift.shift_name : `${shift.shift_number}`;
-              if (shiftHeaders.includes(shiftHeader)) {
-                totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.production_count;
-                totalTargets[shiftHeader] = (totalTargets[shiftHeader] || 0) + shift.target_production;
-              }
-            });
-          }
-        });
-      }
-    });
-  
-    return { totalCounts, totalTargets };
-  };
-
-  const { totalCounts, totalTargets } = calculateTotals();
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -67,6 +44,20 @@ const ProductionScreen = () => {
           <Text style={styles.messageText}>No data available.</Text>
         ) : (
           productionData.map((group, index) => {
+            const totalCounts = {};
+
+            group.machines.forEach(machine => {
+              const machineShifts = machine.shifts ? Object.values(machine.shifts) : [];
+              machineShifts.forEach(shift => {
+                const shiftHeader = shift.shift_name ? shift.shift_name : `${shift.shift_number}`;
+                if (shiftHeaders.includes(shiftHeader)) {
+                  totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.production_count;
+                }
+              });
+            });
+
+            const groupTotal = Object.values(totalCounts).reduce((a, b) => a + b, 0);
+
             return (
               <View key={index} style={styles.groupContainer}>
                 <Text style={styles.groupHeader}>{group.group_name}</Text>
@@ -74,64 +65,61 @@ const ProductionScreen = () => {
                   <ScrollView horizontal>
                     <View style={styles.table}>
                       <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 190 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
                           <Text style={styles.headerText}>Work Center</Text>
                         </View>
                         {shiftHeaders.map((shiftHeader, idx) => (
-                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 190 }]}>
+                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 150 }]}>
                             <Text style={styles.headerText}>{shiftHeader}</Text>
                           </View>
                         ))}
-                        <View style={[styles.cell, styles.columnHeader, { width: 190 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
                           <Text style={styles.headerText}>Total</Text>
                         </View>
                       </View>
                       {group.machines.map((machine, machineIndex) => {
-                        const rowTotals = shiftHeaders.reduce((acc, shiftHeader) => {
-                          const shift = machine.shifts ? machine.shifts.find(s => 
-                            (s.shift_name === shiftHeader || `${s.shift_number}` === shiftHeader)) : null;
+                        const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
+                          const shift = machine.shifts ? machine.shifts[shiftHeader] : null;
                           if (shift) {
                             acc.count += shift.production_count;
-                            acc.target += shift.target_production;
                           }
                           return acc;
-                        }, { count: 0, target: 0 });
+                        }, { count: 0 });
 
                         return (
                           <View key={machineIndex} style={styles.row}>
-                            <View style={[styles.cell, styles.columnValue, { width: 190 }]}>
+                            <View style={[styles.cell, styles.columnValue, { width: 150 }]}>
                               <Text>{machine.machine_name}</Text>
                             </View>
                             {shiftHeaders.map((shiftHeader, idx) => {
-                              const shift = machine.shifts ? machine.shifts.find(s => 
-                                (s.shift_name === shiftHeader || `${s.shift_number}` === shiftHeader)) : null;
+                              const shift = machine.shifts ? machine.shifts[shiftHeader] : null;
                               return (
-                                <View key={idx} style={[styles.cell, styles.columnValue, { width: 190 }]}>
+                                <View key={idx} style={[styles.cell, styles.columnValue, { width: 150 }]}>
                                   {shift ? (
-                                    <Text>{shift.production_count} / {shift.target_production}</Text>
+                                    <Text>{shift.production_count}</Text>
                                   ) : (
-                                    <Text>0 / 0</Text>
+                                    <Text>0</Text>
                                   )}
                                 </View>
                               );
                             })}
-                            <View style={[styles.cell, styles.columnValue, { width: 190 }]}>
-                              <Text>{rowTotals.count} / {rowTotals.target}</Text>
+                            <View style={[styles.cell, styles.columnValue, { width: 150 }]}>
+                              <Text>{rowTotal.count}</Text>
                             </View>
                           </View>
                         );
                       })}
                       <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 190 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
                           <Text style={styles.headerText}>Grand Total</Text>
                         </View>
                         {shiftHeaders.map((shiftHeader, idx) => (
-                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 190 }]}>
-                            <Text style={styles.headerText}>{totalCounts[shiftHeader] || 0} / {totalTargets[shiftHeader] || 0}</Text>
+                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                            <Text style={styles.headerText}>{totalCounts[shiftHeader] || 0}</Text>
                           </View>
                         ))}
-                        <View style={[styles.cell, styles.columnHeader, { width: 190 }]}>
-                          <Text style={styles.headerText}>Total</Text>
+                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                          <Text style={styles.headerText}>{groupTotal}</Text>
                         </View>
                       </View>
                     </View>

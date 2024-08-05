@@ -7,15 +7,83 @@ import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 import { useFocusEffect } from '@react-navigation/native';
 
+const hardCodedShifts = [
+  {
+    shift_name: 'Shift 1',
+    shift_number: 1,
+    time_slots: [
+      { start_time: '06:30 AM', end_time: '07:30 AM' },
+      { start_time: '07:30 AM', end_time: '08:30 AM' },
+      { start_time: '08:30 AM', end_time: '09:30 AM' },
+      { start_time: '09:30 AM', end_time: '10:30 AM' },
+      { start_time: '10:30 AM', end_time: '11:30 AM' },
+      { start_time: '11:30 AM', end_time: '12:30 PM' },
+      { start_time: '12:30 PM', end_time: '01:30 PM' },
+      { start_time: '01:30 PM', end_time: '02:30 PM' },
+    ],
+    groups: [
+      {
+        machines: [
+          { machine_name: 'Machine A' },
+          { machine_name: 'Machine B' },
+        ],
+      },
+    ],
+  },
+  {
+    shift_name: 'Shift 2',
+    shift_number: 2,
+    time_slots: [
+      { start_time: '02:30 PM', end_time: '03:30 PM' },
+      { start_time: '03:30 PM', end_time: '04:30 PM' },
+      { start_time: '04:30 PM', end_time: '05:30 PM' },
+      { start_time: '05:30 PM', end_time: '06:30 PM' },
+      { start_time: '06:30 PM', end_time: '07:30 PM' },
+      { start_time: '07:30 PM', end_time: '08:30 PM' },
+      { start_time: '08:30 PM', end_time: '09:30 PM' },
+      { start_time: '09:30 PM', end_time: '10:30 PM' },
+    ],
+    groups: [
+      {
+        machines: [
+          { machine_name: 'Machine A' },
+          { machine_name: 'Machine C' },
+        ],
+      },
+    ],
+  },
+  {
+    shift_name: 'Shift 3',
+    shift_number: 3,
+    time_slots: [
+      { start_time: '10:30 PM', end_time: '11:30 PM' },
+      { start_time: '11:30 PM', end_time: '12:30 AM' },
+      { start_time: '12:30 AM', end_time: '01:30 AM' },
+      { start_time: '01:30 AM', end_time: '02:30 AM' },
+      { start_time: '02:30 AM', end_time: '03:30 AM' },
+      { start_time: '03:30 AM', end_time: '04:30 AM' },
+      { start_time: '04:30 AM', end_time: '05:30 AM' },
+      { start_time: '05:30 AM', end_time: '06:30 AM' },
+    ],
+    groups: [
+      {
+        machines: [
+          { machine_name: 'Machine A' },
+          { machine_name: 'Machine C' },
+        ],
+      },
+    ],
+  },
+];
+
 const ReportScreen = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState([]);
-  const [shifts, setShifts] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState(hardCodedShifts);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,19 +100,16 @@ const ReportScreen = () => {
         }));
 
         setDropdownOptions(machineOptions);
-
-        const shiftResponse = await axios.get(`${BaseURL}data/production-monitor/`, {
-          headers: { Authorization: `Token ${token}` }
-        });
-        const shiftData = shiftResponse.data.shift_wise_data;
-        setShifts(shiftData);
-        setSearchResults(shiftData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    setSearchResults(hardCodedShifts);
   }, []);
 
   const handleDateChange = (event, date) => {
@@ -75,9 +140,8 @@ const ReportScreen = () => {
 
     const selectedDateString = selectedDate.toISOString().split('T')[0];
 
-    const filteredShifts = shifts.filter(shift => {
-      const shiftDate = new Date(shift.shift_date).toISOString().split('T')[0];
-      return shiftDate === selectedDateString;
+    const filteredShifts = hardCodedShifts.filter(shift => {
+      return true;
     }).map(shift => {
       const filteredGroups = shift.groups.map(group => {
         const filteredMachines = group.machines.filter(machine => machine.machine_name === selectedMachine);
@@ -93,25 +157,24 @@ const ReportScreen = () => {
       };
     }).filter(shift => shift.groups.length > 0);
 
-    if (filteredShifts.length === 0) {
-      setSearchResults([]);
-      console.log('Search results:', filteredShifts);
-    } else {
-      setSearchResults(filteredShifts);
-    }
+    setSearchResults(filteredShifts);
   };
 
   const handleReset = () => {
     setSelectedOption(null);
     setSelectedDate(new Date());
-    setSearchResults(shifts);
+    setSearchResults(hardCodedShifts);
   };
 
   useFocusEffect(
     useCallback(() => {
       handleReset();
-    }, [shifts])
+    }, [])
   );
+
+  const calculateShiftTotalCount = (shift) => {
+    return shift.time_slots.length * 0;
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -159,52 +222,40 @@ const ReportScreen = () => {
           <Text style={styles.messageText}>No data available.</Text>
         ) : (
           searchResults.map((shift, shiftIndex) => {
-            let siNoCounter = 1;
+            const shiftTotalCount = calculateShiftTotalCount(shift);
             return (
               <View key={shiftIndex} style={styles.groupContainer}>
                 <View style={{ height: 20 }}></View>
                 <Text style={styles.groupHeader}>{shift.shift_name || `Shift ${shift.shift_number}`}</Text>
                 <View style={styles.tableContainer}>
-                  <ScrollView horizontal>
-                    <View style={styles.table}>
-                      <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>Si.No</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 160 }]}>
-                          <Text style={styles.headerText}>Group Name</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                          <Text style={styles.headerText}>Shift Start</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                          <Text style={styles.headerText}>Shift End</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                          <Text style={styles.headerText}>Production Count</Text>
-                        </View>
+                  <View style={styles.table}>
+                    <View style={styles.row}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Time</Text>
                       </View>
-                      {shift.groups.map((group, groupIndex) => (
-                      <View key={groupIndex} style={styles.row}>
-                        <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
-                          <Text>{groupIndex + 1}</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
-                          <Text>{group.group_name}</Text>
-                        </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Production Count Actual</Text>
+                      </View>
+                    </View>
+                    {shift.time_slots.map((slot, index) => (
+                      <View key={index} style={styles.row}>
                         <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{shift.shift_start_time}</Text>
-                        </View>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{shift.shift_end_time}</Text>
+                          <Text>{`${slot.start_time} - ${slot.end_time}`}</Text>
                         </View>
                         <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
                           <Text>0</Text>
                         </View>
                       </View>
                     ))}
+                    <View style={styles.row}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Total</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>{shiftTotalCount}</Text>
+                      </View>
                     </View>
-                  </ScrollView>
+                  </View>
                 </View>
               </View>
             );
@@ -296,10 +347,6 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-  },
-  headerRow: {
-    borderBottomWidth: 2,
-    borderBottomColor: 'dodgerblue',
   },
   cell: {
     paddingVertical: 10,

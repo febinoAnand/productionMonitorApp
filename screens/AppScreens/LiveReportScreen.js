@@ -19,178 +19,173 @@ const LiveReportScreen = () => {
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>MCLMI3</Text>
+          <Text style={styles.headerText}>Machine Details</Text>
         </View>
         <View style={styles.tableContainer}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader]}>
-              <Text>Production Count</Text>
+          <View style={styles.row1}>
+            <View style={[styles.cell1, styles.columnHeader1]}>
+              <Text>Machine Name</Text>
             </View>
-            <View style={[styles.cell, styles.columnValue]}>
+            <View style={[styles.cell1, styles.columnValue1]}>
               <Text>123</Text>
             </View>
           </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader]}>
-              <Text>Shift Time</Text>
+          <View style={styles.row1}>
+            <View style={[styles.cell1, styles.columnHeader1]}>
+              <Text>Machine ID</Text>
             </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>6:30 am to 6:00 pm</Text>
+            <View style={[styles.cell1, styles.columnValue1]}>
+              <Text>machine-1</Text>
             </View>
           </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader]}>
-              <Text>Data</Text>
+          <View style={styles.row1}>
+            <View style={[styles.cell1, styles.columnHeader1]}>
+              <Text>Line</Text>
             </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>24 May 2024 19:20 am</Text>
+            <View style={[styles.cell1, styles.columnValue1]}>
+              <Text>1</Text>
+            </View>
+          </View>
+          <View style={styles.row1}>
+            <View style={[styles.cell1, styles.columnHeader1]}>
+              <Text>Manufacture</Text>
+            </View>
+            <View style={[styles.cell1, styles.columnValue1]}>
+              <Text>mando</Text>
+            </View>
+          </View>
+          <View style={styles.row1}>
+            <View style={[styles.cell1, styles.columnHeader1]}>
+              <Text>Year</Text>
+            </View>
+            <View style={[styles.cell1, styles.columnValue1]}>
+              <Text>2024</Text>
+            </View>
+          </View>
+          <View style={styles.row1}>
+            <View style={[styles.cell1, styles.columnHeader1]}>
+              <Text>Production Per Hour</Text>
+            </View>
+            <View style={[styles.cell1, styles.columnValue1]}>
+              <Text>24</Text>
             </View>
           </View>
         </View>
         <View style={styles.additionalHeader}>
-          <Text style={styles.additionalHeaderText}>SHIFT WISE REPORT</Text>
+          <Text style={styles.additionalHeaderText}>PRODUCTION DATA</Text>
         </View>
-        <View style={styles.shiftTextContainer}>
-          <Text style={styles.shiftText}>SHIFT 1</Text>
-        </View>
+        
         <View style={styles.tableContainer1}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header A</Text>
+          <ScrollView horizontal>
+            <View>
+              <View style={styles.row}>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 180 }]}>
+                  <Text style={{ color: '#fff' }}>Date</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 180 }]}>
+                  <Text style={{ color: '#fff' }}>Time</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 200 }]}>
+                  <Text style={{ color: '#fff' }}>Tudays Count</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 200 }]}>
+                  <Text style={{ color: '#fff' }}>Actual Reading</Text>
+                </View>
+              </View>
+              <View style={styles.row}>
+                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
+                  <Text>05-08-2024</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
+                  <Text>3.30 PM</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
+                  <Text>10000</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
+                  <Text>100</Text>
+                </View>
+              </View>
+              <View style={styles.row}>
+                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
+                  <Text>05-08-2024</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
+                  <Text>5.30 PM</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
+                  <Text>10100</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
+                  <Text>20</Text>
+                </View>
+              </View>
             </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header B</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header A</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header B</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
+          </ScrollView>
         </View>
-        <View style={styles.shiftTextContainer}>
-          <Text style={styles.shiftText}>SHIFT 2</Text>
+        
+        <View style={styles.additionalHeader}>
+          <Text style={styles.additionalHeaderText}>MACHINE DATA</Text>
         </View>
+        
         <View style={styles.tableContainer1}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header A</Text>
+          <ScrollView horizontal>
+            <View>
+              <View style={styles.row}>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 120 }]}>
+                  <Text style={{ color: '#fff' }}>Si.No</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
+                  <Text style={{ color: '#fff' }}>Date</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
+                  <Text style={{ color: '#fff' }}>Time</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
+                  <Text style={{ color: '#fff' }}>Machine ID</Text>
+                </View>
+                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
+                  <Text style={{ color: '#fff' }}>Data</Text>
+                </View>
+              </View>
+              <View style={styles.row}>
+                <View style={[styles.cell, styles.columnValue,{width: 120}]}>
+                  <Text>1</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>05-08-2024</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>11.00 PM</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>123</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>hi</Text>
+                </View>
+              </View>
+              <View style={styles.row}>
+                <View style={[styles.cell, styles.columnValue,{width: 120}]}>
+                  <Text>2</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>05-08-2024</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>11.00 PM</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>123</Text>
+                </View>
+                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
+                  <Text>hi</Text>
+                </View>
+              </View>
             </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header B</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header A</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header B</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
+          </ScrollView>
         </View>
-        <View style={styles.shiftTextContainer}>
-          <Text style={styles.shiftText}>SHIFT 3</Text>
-        </View>
-        <View style={styles.tableContainer1}>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header A</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header B</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header A</Text>
-            </View>
-            <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue' }]}>
-              <Text style={{ color: '#fff' }}>Header B</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B2</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value A1</Text>
-            </View>
-            <View style={[styles.cell, styles.columnValue]}>
-              <Text>Value B1</Text>
-            </View>
-          </View>
-        </View>
+        <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
   );
@@ -232,12 +227,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: '#fff',
     shadowOffset: {
-        width: 0,
-        height: 10,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 5.84,
-      elevation: 8,
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
   },
   tableContainer1: {
     width: '90%',
@@ -247,37 +242,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    marginTop: 20,
-    marginBottom: 20,
+
     backgroundColor: '#fff',
     shadowOffset: {
-        width: 0,
-        height: 10,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 5.84,
-      elevation: 8,
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
   },
   row: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#ddd',
   },
   cell: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    padding: 10,
+    borderRightWidth: 1,
+    borderRightColor: '#ddd',
   },
   columnHeader: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    borderRightWidth: 1,
-    borderRightColor: '#ccc',
+    backgroundColor: '#f4f4f4',
   },
   columnValue: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    backgroundColor: '#fff',
   },
   additionalHeader: {
     width: '100%',
@@ -289,19 +278,30 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   additionalHeaderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'dodgerblue',
-  },
-  shiftTextContainer: {
-    width: '90%',
-    marginTop: 10,
-    marginLeft: 20,
-  },
-  shiftText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'dodgerblue',
+  },
+  row1: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  cell1: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  columnHeader1: {
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    borderRightWidth: 1,
+    borderRightColor: '#ccc',
+  },
+  columnValue1: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
 });
 

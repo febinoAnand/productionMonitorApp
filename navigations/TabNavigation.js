@@ -16,7 +16,7 @@ const Stack = createStackNavigator();
 const MainStack = () => (
   <Stack.Navigator>
     <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="WORK CENTER" component={LiveReportScreen} />
+    <Stack.Screen name="WORK CENTER" component={LiveReportScreen} options={{ headerShown: false }}/>
     <Stack.Screen name="ProductionScreen" component={ProductionScreen} />
     <Stack.Screen name="ReportScreen" component={ReportScreen} />
     <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
