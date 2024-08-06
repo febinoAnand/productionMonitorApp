@@ -1,39 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ProductionScreen = () => {
   const [productionData, setProductionData] = useState([]);
   const [shiftHeaders, setShiftHeaders] = useState([]);
+  const intervalRef = useRef(null);
+
+  const fetchGroupData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const productionResponse = await axios.get(`${BaseURL}data/production/`, {
+        headers: { Authorization: `Token ${token}` }
+      });
+      let productionData = productionResponse.data.group_data || [];
+      productionData = productionData.reverse();
+      setProductionData(productionData);
+
+      if (productionData.length > 0 && productionData[0].machines.length > 0) {
+        const firstMachineShifts = Object.values(productionData[0].machines[0].shifts);
+        const shifts = firstMachineShifts
+          .filter(shift => shift.shift_name !== '0' && shift.shift_number !== 0)
+          .map(shift =>
+            shift.shift_name ? shift.shift_name : `${shift.shift_number}`
+          );
+        setShiftHeaders([...new Set(shifts)]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const startFetchingData = () => {
+    console.log('Starting data fetch interval');
+    fetchGroupData();
+    intervalRef.current = setInterval(() => {
+      console.log('Fetching production data...');
+      fetchGroupData();
+    }, 3000);
+  };
+
+  const stopFetchingData = () => {
+    if (intervalRef.current) {
+      console.log('Stopping data fetch interval');
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      startFetchingData();
+      return () => {
+        stopFetchingData();
+      };
+    }, [])
+  );
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const productionResponse = await axios.get(`${BaseURL}data/production/`, {
-          headers: { Authorization: `Token ${token}` }
-        });
-        let productionData = productionResponse.data.group_data || [];
-        productionData = productionData.reverse();
-        setProductionData(productionData);
-
-        if (productionData.length > 0 && productionData[0].machines.length > 0) {
-          const firstMachineShifts = Object.values(productionData[0].machines[0].shifts);
-          const shifts = firstMachineShifts
-            .filter(shift => shift.shift_name !== '0' && shift.shift_number !== 0)
-            .map(shift =>
-              shift.shift_name ? shift.shift_name : `${shift.shift_number}`
-            );
-          setShiftHeaders([...new Set(shifts)]);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    return () => {
+      stopFetchingData();
     };
-
-    fetchData();
   }, []);
 
   return (
@@ -51,7 +81,7 @@ const ProductionScreen = () => {
               machineShifts.forEach(shift => {
                 const shiftHeader = shift.shift_name ? shift.shift_name : `${shift.shift_number}`;
                 if (shiftHeaders.includes(shiftHeader)) {
-                  totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.production_count;
+                  totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.Production_count;
                 }
               });
             });
@@ -81,7 +111,7 @@ const ProductionScreen = () => {
                         const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
                           const shift = machine.shifts ? machine.shifts[shiftHeader] : null;
                           if (shift) {
-                            acc.count += shift.production_count;
+                            acc.count += shift.Production_count;
                           }
                           return acc;
                         }, { count: 0 });
@@ -96,7 +126,7 @@ const ProductionScreen = () => {
                               return (
                                 <View key={idx} style={[styles.cell, styles.columnValue, { width: 150 }]}>
                                   {shift ? (
-                                    <Text>{shift.production_count}</Text>
+                                    <Text>{shift.Production_count}</Text>
                                   ) : (
                                     <Text>0</Text>
                                   )}
