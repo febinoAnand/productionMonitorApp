@@ -98,8 +98,9 @@ const DashboardScreen = () => {
     };
   }, []);
 
-  const handleSquarePress = (machineName) => {
-    navigation.navigate('WORK CENTER', { machineName });
+  const handleSquarePress = (machine) => {
+    console.log('Selected Machine ID:', machine.id);
+    navigation.navigate('WORK CENTER', { id: machine.id });
   };
 
   return (
@@ -117,9 +118,9 @@ const DashboardScreen = () => {
               <View style={styles.squareContainer}>
                 {group.machines.map((machine) => (
                   <TouchableOpacity
-                    key={machine.machine_id}
+                    key={machine.id}
                     style={styles.square}
-                    onPress={() => handleSquarePress(machine.machine_name)}
+                    onPress={() => handleSquarePress(machine)}
                   >
                     <Text style={styles.squareText}>{machine.machine_name}</Text>
                     <View style={styles.oval}>

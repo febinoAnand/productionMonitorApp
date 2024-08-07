@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import Svg, { Rect, Text as SvgText } from 'react-native-svg';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import { BaseURL } from '../../config/appconfig';
 
 const LiveReportScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { id } = route.params || {};
+  const [machineDetails, setMachineDetails] = useState(null);
+  const [productionData, setProductionData] = useState([]);
+  const [machineData, setMachineData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const intervalRef = useRef(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -16,174 +24,154 @@ const LiveReportScreen = () => {
     }, [navigation])
   );
 
-  const data = [
-    { label: 'Machine 1', value: 120 },
-    { label: 'Machine 2', value: 50 },
-    { label: 'Machine 3', value: 90 },
-    { label: 'Machine 4', value: 60 },
-  ];
+  const fetchData = async () => {
+    if (!id) {
+      console.warn('Machine ID is missing or undefined');
+      setLoading(false);
+      return;
+    }
 
-  const barHeight = 30;
-  const chartHeight = data.length * (barHeight + 10);
-  const chartWidth = 300;
-  const maxValue = Math.max(...data.map(d => d.value));
+    setLoading(true);
+    try {
+      const response = await axios.get(`${BaseURL}data/individual/${id}/`);
+      console.log('Fetched data:', response.data);
+
+      const data = response.data;
+      const selectedMachineDetails = data.machine_details;
+
+      if (selectedMachineDetails) {
+        setMachineDetails(selectedMachineDetails);
+        setProductionData(selectedMachineDetails.production_data || []);
+        setMachineData(selectedMachineDetails.machine_data || []);
+      } else {
+        console.warn('No details found for the selected machine.');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startFetchingData = () => {
+    console.log('Starting data fetch interval');
+    fetchData();
+    intervalRef.current = setInterval(() => {
+      console.log('Fetching data...');
+      fetchData();
+    }, 3000);
+  };
+
+  const stopFetchingData = () => {
+    if (intervalRef.current) {
+      console.log('Stopping data fetch interval');
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      startFetchingData();
+      return () => {
+        stopFetchingData();
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    return () => {
+      stopFetchingData();
+    };
+  }, []);
+
+  const safeProductionData = Array.isArray(productionData) ? productionData : [];
+  const safeMachineData = Array.isArray(machineData) ? machineData : [];
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Machine Details</Text>
+          <Text style={styles.headerText}>MACHINE DETAILS</Text>
         </View>
         <View style={styles.tableContainer}>
-          <View style={styles.row1}>
-            <View style={[styles.cell1, styles.columnHeader1]}>
-              <Text>Machine Name</Text>
-            </View>
-            <View style={[styles.cell1, styles.columnValue1]}>
-              <Text>123</Text>
-            </View>
-          </View>
-          <View style={styles.row1}>
-            <View style={[styles.cell1, styles.columnHeader1]}>
-              <Text>Machine ID</Text>
-            </View>
-            <View style={[styles.cell1, styles.columnValue1]}>
-              <Text>machine-1</Text>
-            </View>
-          </View>
-          <View style={styles.row1}>
-            <View style={[styles.cell1, styles.columnHeader1]}>
-              <Text>Line</Text>
-            </View>
-            <View style={[styles.cell1, styles.columnValue1]}>
-              <Text>1</Text>
-            </View>
-          </View>
-          <View style={styles.row1}>
-            <View style={[styles.cell1, styles.columnHeader1]}>
-              <Text>Manufacture</Text>
-            </View>
-            <View style={[styles.cell1, styles.columnValue1]}>
-              <Text>mando</Text>
-            </View>
-          </View>
-          <View style={styles.row1}>
-            <View style={[styles.cell1, styles.columnHeader1]}>
-              <Text>Year</Text>
-            </View>
-            <View style={[styles.cell1, styles.columnValue1]}>
-              <Text>2024</Text>
-            </View>
-          </View>
-          <View style={styles.row1}>
-            <View style={[styles.cell1, styles.columnHeader1]}>
-              <Text>Production Per Hour</Text>
-            </View>
-            <View style={[styles.cell1, styles.columnValue1]}>
-              <Text>24</Text>
-            </View>
-          </View>
+          {loading ? (
+            <Text>Loading...</Text>
+          ) : machineDetails ? (
+            Object.entries({
+              'Machine Name': machineDetails.machine_name,
+              'Machine ID': machineDetails.machine_id,
+              'Line': machineDetails.line,
+              'Manufacture': machineDetails.manufacture,
+              'Year': machineDetails.year,
+              'Production Per Hour': machineDetails.production_per_hour,
+            }).map(([key, value]) => (
+              <View style={styles.row1} key={key}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text>{key}</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text>{value || '0'}</Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <Text>No details available.</Text>
+          )}
         </View>
-        <View style={styles.additionalHeader}>
-          <Text style={styles.additionalHeaderText}>PRODUCTION DATA</Text>
+
+        <View style={styles.header}>
+          <Text style={styles.headerText}>PRODUCTION DATA</Text>
         </View>
-        
-        <View style={styles.tableContainer1}>
-          <ScrollView horizontal>
-            <View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 180 }]}>
-                  <Text style={{ color: '#fff' }}>Date</Text>
+        <View style={styles.tableContainer}>
+          {loading ? (
+            <Text>Loading...</Text>
+          ) : safeProductionData.length > 0 ? (
+            safeProductionData.map((item, index) => (
+              <View key={index}>
+                <View style={styles.row1}>
+                  <View style={[styles.cell1, styles.columnHeader1]}>
+                    <Text>Date</Text>
+                  </View>
+                  <View style={[styles.cell1, styles.columnValue1]}>
+                    <Text>{item.date || 'N/A'}</Text>
+                  </View>
                 </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 180 }]}>
-                  <Text style={{ color: '#fff' }}>Time</Text>
+                <View style={styles.row1}>
+                  <View style={[styles.cell1, styles.columnHeader1]}>
+                    <Text>Time</Text>
+                  </View>
+                  <View style={[styles.cell1, styles.columnValue1]}>
+                    <Text>{item.time || 'N/A'}</Text>
+                  </View>
                 </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 200 }]}>
-                  <Text style={{ color: '#fff' }}>Tudays Count</Text>
+                <View style={styles.row1}>
+                  <View style={[styles.cell1, styles.columnHeader1]}>
+                    <Text>Today's Count</Text>
+                  </View>
+                  <View style={[styles.cell1, styles.columnValue1]}>
+                    <Text>{item.production_count || 'N/A'}</Text>
+                  </View>
                 </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 200 }]}>
-                  <Text style={{ color: '#fff' }}>Actual Reading</Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
-                  <Text>05-08-2024</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
-                  <Text>3.30 PM</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
-                  <Text>10000</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
-                  <Text>100</Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
-                  <Text>05-08-2024</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 180}]}>
-                  <Text>5.30 PM</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
-                  <Text>10100</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 200}]}>
-                  <Text>20</Text>
+                <View style={styles.row1}>
+                  <View style={[styles.cell1, styles.columnHeader1]}>
+                    <Text>Target Reading</Text>
+                  </View>
+                  <View style={[styles.cell1, styles.columnValue1]}>
+                    <Text>{item.target_production || 'N/A'}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </ScrollView>
+            ))
+          ) : (
+            <Text>No production data available.</Text>
+          )}
         </View>
 
         <View style={styles.additionalHeader}>
-          <Text style={styles.additionalHeaderText}>PRODUCTION CHART</Text>
-        </View>
-        
-        <View style={styles.tableContainer1}>
-          <View style={styles.chartContainer}>
-            <Svg height={chartHeight} width={chartWidth}>
-              {data.map((item, index) => {
-                const barWidth = (item.value / maxValue) * (chartWidth - 100);
-                return (
-                  <React.Fragment key={index}>
-                    <Rect
-                      x="0"
-                      y={index * (barHeight + 10)}
-                      width={barWidth}
-                      height={barHeight}
-                      fill="dodgerblue"
-                    />
-                    <SvgText
-                      x={barWidth + 5}
-                      y={index * (barHeight + 10) + barHeight / 2}
-                      alignmentBaseline="middle"
-                      fontSize="12"
-                      fill="black"
-                    >
-                      {item.label}
-                    </SvgText>
-                    <SvgText
-                      x="10"
-                      y={index * (barHeight + 10) + barHeight / 2}
-                      alignmentBaseline="middle"
-                      fontSize="10"
-                      fill="white"
-                    >
-                      {item.value}
-                    </SvgText>
-                  </React.Fragment>
-                );
-              })}
-            </Svg>
-          </View>
-        </View>
-        
-        <View style={styles.additionalHeader}>
           <Text style={styles.additionalHeaderText}>MACHINE DATA</Text>
         </View>
-        
+
         <View style={styles.tableContainer1}>
           <ScrollView horizontal>
             <View>
@@ -204,44 +192,32 @@ const LiveReportScreen = () => {
                   <Text style={{ color: '#fff' }}>Data</Text>
                 </View>
               </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.columnValue,{width: 120}]}>
-                  <Text>1</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>05-08-2024</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>11.00 PM</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>123</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>hi</Text>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.columnValue,{width: 120}]}>
-                  <Text>2</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>05-08-2024</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>11.00 PM</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>123</Text>
-                </View>
-                <View style={[styles.cell, styles.columnValue,{width: 160}]}>
-                  <Text>hi</Text>
-                </View>
-              </View>
+              {safeMachineData.length > 0 ? (
+                safeMachineData.map((item, index) => (
+                  <View style={styles.row} key={index}>
+                    <View style={[styles.cell, styles.columnValue, { width: 120 }]}>
+                      <Text>{index + 1}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
+                      <Text>{item.date || 'N/A'}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
+                      <Text>{item.time || 'N/A'}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
+                      <Text>{item.machine_id || 'N/A'}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
+                      <Text>{JSON.stringify(item.data) || 'N/A'}</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text>No machine data available.</Text>
+              )}
             </View>
           </ScrollView>
         </View>
-        <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
   );
