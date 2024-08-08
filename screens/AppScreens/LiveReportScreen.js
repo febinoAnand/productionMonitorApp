@@ -11,11 +11,19 @@ const LiveReportScreen = () => {
   const [machineDetails, setMachineDetails] = useState(null);
   const [productionData, setProductionData] = useState([]);
   const [machineData, setMachineData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const intervalRef = useRef(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       const unsubscribe = navigation.addListener('blur', () => {
         navigation.replace('Dashboard');
       });
@@ -24,22 +32,26 @@ const LiveReportScreen = () => {
     }, [navigation])
   );
 
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timeInterval);
+  }, []);
+
   const fetchData = async () => {
     if (!id) {
       console.warn('Machine ID is missing or undefined');
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
       const response = await axios.get(`${BaseURL}data/individual/${id}/`);
-      console.log('Fetched data:', response.data);
-
       const data = response.data;
       const selectedMachineDetails = data.machine_details;
 
-      if (selectedMachineDetails) {
+      if (selectedMachineDetails && isMounted.current) {
         setMachineDetails(selectedMachineDetails);
         setProductionData(selectedMachineDetails.production_data || []);
         setMachineData(selectedMachineDetails.machine_data || []);
@@ -48,27 +60,25 @@ const LiveReportScreen = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const startFetchingData = () => {
+  const startFetchingData = useCallback(() => {
     console.log('Starting data fetch interval');
     fetchData();
     intervalRef.current = setInterval(() => {
       console.log('Fetching data...');
       fetchData();
     }, 3000);
-  };
+  }, [id]);
 
-  const stopFetchingData = () => {
+  const stopFetchingData = useCallback(() => {
     if (intervalRef.current) {
       console.log('Stopping data fetch interval');
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -76,17 +86,25 @@ const LiveReportScreen = () => {
       return () => {
         stopFetchingData();
       };
-    }, [])
+    }, [startFetchingData, stopFetchingData])
   );
 
   useEffect(() => {
     return () => {
       stopFetchingData();
     };
-  }, []);
+  }, [stopFetchingData]);
 
   const safeProductionData = Array.isArray(productionData) ? productionData : [];
   const safeMachineData = Array.isArray(machineData) ? machineData : [];
+
+  const getCurrentDate = () => {
+    return currentTime.toLocaleDateString();
+  };
+
+  const getCurrentTime = () => {
+    return currentTime.toLocaleTimeString();
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -95,9 +113,7 @@ const LiveReportScreen = () => {
           <Text style={styles.headerText}>MACHINE DETAILS</Text>
         </View>
         <View style={styles.tableContainer}>
-          {loading ? (
-            <Text>Loading...</Text>
-          ) : machineDetails ? (
+          {machineDetails ? (
             Object.entries({
               'Machine Name': machineDetails.machine_name,
               'Machine ID': machineDetails.machine_id,
@@ -124,9 +140,7 @@ const LiveReportScreen = () => {
           <Text style={styles.headerText}>PRODUCTION DATA</Text>
         </View>
         <View style={styles.tableContainer}>
-          {loading ? (
-            <Text>Loading...</Text>
-          ) : safeProductionData.length > 0 ? (
+          {safeProductionData.length > 0 ? (
             safeProductionData.map((item, index) => (
               <View key={index}>
                 <View style={styles.row1}>
@@ -134,7 +148,7 @@ const LiveReportScreen = () => {
                     <Text>Date</Text>
                   </View>
                   <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{item.date || 'N/A'}</Text>
+                    <Text>{getCurrentDate()}</Text>
                   </View>
                 </View>
                 <View style={styles.row1}>
@@ -142,7 +156,7 @@ const LiveReportScreen = () => {
                     <Text>Time</Text>
                   </View>
                   <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{item.time || 'N/A'}</Text>
+                    <Text>{getCurrentTime()}</Text>
                   </View>
                 </View>
                 <View style={styles.row1}>
@@ -164,7 +178,40 @@ const LiveReportScreen = () => {
               </View>
             ))
           ) : (
-            <Text>No production data available.</Text>
+            <View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text>Date</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text>{getCurrentDate()}</Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text>Time</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text>{getCurrentTime()}</Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text>Today's Count</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text>N/A</Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text>Target Reading</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text>N/A</Text>
+                </View>
+              </View>
+            </View>
           )}
         </View>
 

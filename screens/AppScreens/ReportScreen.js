@@ -108,10 +108,6 @@ const ReportScreen = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    setSearchResults(hardCodedShifts);
-  }, []);
-
   const handleDateChange = (event, date) => {
     if (date !== undefined) {
       setSelectedDate(date);
@@ -142,30 +138,28 @@ const ReportScreen = () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post(
-        `${BaseURL}data/machine-hourly-data/`,
+        `${BaseURL}data/hourly-shift-report/`,
         { machine_id: selectedMachine, date: selectedDateString },
         { headers: { Authorization: `Token ${token}` } }
       );
   
       const data = response.data;
   
-      const filteredShifts = Object.keys(data).reduce((result, key) => {
-        const shiftData = data[key];
-        const timeSlots = Object.keys(shiftData.hourly_data).map(time => ({
-          start_time: time.split('-')[0],
-          end_time: time.split('-')[1],
-          count: shiftData.hourly_data[time]
-        }));
+      const filteredShifts = data.shifts
+        .filter((shift) => Object.keys(shift.timing).length > 0)
+        .map((shift) => {
+          const timeSlots = Object.keys(shift.timing).map(time => ({
+            start_time: time.split(' - ')[0],
+            end_time: time.split(' - ')[1],
+            count: shift.timing[time],
+          }));
   
-        if (timeSlots.length > 0) {
-          result.push({
-            shift_name: `Shift ${key}`,
-            time_slots: timeSlots
-          });
-        }
-  
-        return result;
-      }, []);
+          return {
+            shift_name: shift.shift_name || `Shift ${shift.shift_no}`,
+            shift_number: shift.shift_no,
+            time_slots: timeSlots,
+          };
+        });
   
       setSearchResults(filteredShifts);
     } catch (error) {
@@ -235,7 +229,7 @@ const ReportScreen = () => {
           <Text style={styles.messageText}>No data available.</Text>
         ) : (
           searchResults.map((shift, shiftIndex) => {
-            const shiftTotalCount = shift.time_slots.reduce((total, slot) => total + slot.count, 0);
+            const shiftTotalCount = calculateShiftTotalCount(shift);
             return (
               <View key={shiftIndex} style={styles.groupContainer}>
                 <View style={{ height: 20 }}></View>
