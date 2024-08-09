@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
@@ -105,6 +106,18 @@ const LiveReportScreen = () => {
   const getCurrentTime = () => {
     return currentTime.toLocaleTimeString();
   };
+
+  const data = [
+    { label: 'Machine 1', value: 120 },
+    { label: 'Machine 2', value: 50 },
+    { label: 'Machine 3', value: 90 },
+    { label: 'Machine 4', value: 60 },
+  ];
+
+  const barHeight = 30;
+  const chartHeight = data.length * (barHeight + 10);
+  const chartWidth = 300;
+  const maxValue = Math.max(...data.map(d => d.value));
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -213,6 +226,49 @@ const LiveReportScreen = () => {
               </View>
             </View>
           )}
+        </View>
+
+        <View style={styles.additionalHeader}>
+          <Text style={styles.additionalHeaderText}>PRODUCTION CHART</Text>
+        </View>
+        
+        <View style={styles.tableContainer1}>
+          <View style={styles.chartContainer}>
+            <Svg height={chartHeight} width={chartWidth}>
+              {data.map((item, index) => {
+                const barWidth = (item.value / maxValue) * (chartWidth - 100);
+                return (
+                  <React.Fragment key={index}>
+                    <Rect
+                      x="0"
+                      y={index * (barHeight + 10)}
+                      width={barWidth}
+                      height={barHeight}
+                      fill="dodgerblue"
+                    />
+                    <SvgText
+                      x={barWidth + 5}
+                      y={index * (barHeight + 10) + barHeight / 2}
+                      alignmentBaseline="middle"
+                      fontSize="12"
+                      fill="black"
+                    >
+                      {item.label}
+                    </SvgText>
+                    <SvgText
+                      x="10"
+                      y={index * (barHeight + 10) + barHeight / 2}
+                      alignmentBaseline="middle"
+                      fontSize="10"
+                      fill="white"
+                    >
+                      {item.value}
+                    </SvgText>
+                  </React.Fragment>
+                );
+              })}
+            </Svg>
+          </View>
         </View>
 
         <View style={styles.additionalHeader}>
