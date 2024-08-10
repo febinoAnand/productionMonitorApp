@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -14,7 +14,6 @@ const ProductionScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [searchDate, setSearchDate] = useState(null);
-  const intervalRef = useRef(null);
 
   const fetchGroupData = async (date) => {
     try {
@@ -23,18 +22,24 @@ const ProductionScreen = () => {
         console.error('No token found in AsyncStorage');
         return;
       }
+
+      const formattedDate = date.toISOString().split('T')[0];
   
-      const productionResponse = await axios.get(`${BaseURL}data/production/`, {
-        headers: { Authorization: `Token ${token}` }
-      });
-  
+      const productionResponse = await axios.post(
+        `${BaseURL}data/production/`,
+        { date: formattedDate },
+        {
+          headers: { Authorization: `Token ${token}` }
+        }
+      );
+
       const responseDate = productionResponse.data.date;
-      if (responseDate !== date.toISOString().split('T')[0]) {
+      if (responseDate !== formattedDate) {
         console.log('Selected date does not match the fetched data date');
         setProductionData([]);
         return;
       }
-  
+
       const productionData = productionResponse.data.machine_groups || [];
 
       const filteredData = productionData
@@ -45,11 +50,11 @@ const ProductionScreen = () => {
           ),
         }))
         .filter(group => group.machines.length > 0);
-  
+
       console.log('Filtered Production Data:', filteredData);
-  
+
       setProductionData(filteredData.reverse());
-  
+
       if (filteredData.length > 0 && filteredData[0].machines.length > 0) {
         const firstMachineShifts = filteredData[0].machines.flatMap(machine => machine.shifts || []);
         const shifts = firstMachineShifts
@@ -60,42 +65,26 @@ const ProductionScreen = () => {
     } catch (error) {
       console.error('Error fetching production data:', error);
     }
-  };  
-
-  const fetchDataWithDebounce = useCallback(debounce((date) => fetchGroupData(date), 3000), []);
-
-  const startFetchingData = () => {
-    fetchDataWithDebounce(searchDate || selectedDate);
-    console.log('Starting data fetch interval');
-    intervalRef.current = setInterval(() => {
-      fetchDataWithDebounce(searchDate || selectedDate);
-      console.log('Fetching production data...');
-    }, 3000);
   };
 
-  const stopFetchingData = () => {
-    if (intervalRef.current) {
-      console.log('Stopping data fetch interval');
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
+  const fetchDataWithDebounce = useCallback(debounce((date) => fetchGroupData(date), 1000), []);
 
   useFocusEffect(
     useCallback(() => {
-      startFetchingData();
+      if (searchDate) {
+        fetchDataWithDebounce(searchDate);
+      }
       return () => {
-        stopFetchingData();
+        fetchDataWithDebounce.cancel();
       };
-    }, [searchDate, selectedDate])
+    }, [searchDate])
   );
 
   useEffect(() => {
-    fetchGroupData(selectedDate);
-    return () => {
-      stopFetchingData();
-    };
-  }, [selectedDate]);
+    if (searchDate) {
+      fetchGroupData(searchDate);
+    }
+  }, [searchDate]);
 
   const handleDateChange = (event, date) => {
     setShowDatePicker(Platform.OS === 'ios');
