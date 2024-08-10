@@ -16,6 +16,8 @@ export default function DownloadScreen() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [loadingShiftWise, setLoadingShiftWise] = useState(false);
 
   useEffect(() => {
     fetchDropdownOptions();
@@ -36,60 +38,46 @@ export default function DownloadScreen() {
     }
   };
 
-  const fetchDataAndGeneratePDF = async (isSummaryReport = true) => {
+  const fetchDataAndGeneratePDF = async () => {
+    if (!selectedOption || !selectedDate) {
+      Alert.alert('Missing Information', 'Please select a machine and date.');
+      return;
+    }
+
+    setLoadingShiftWise(true);
+
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.get(`${BaseURL}data/production-monitor/`, {
+      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
+        machine_id: selectedOption.value,
+        date: selectedDate.toISOString().split('T')[0]
+      }, {
         headers: { Authorization: `Token ${token}` }
       });
-
+      console.log('API Response:', response.data);
       const data = response.data;
-      const reportHtml = isSummaryReport ? generateSummaryReportHtml(data) : generateShiftWiseReportHtml(data);
+      const reportHtml = generateShiftWiseReportHtml(data);
 
       const { uri } = await Print.printToFileAsync({ html: reportHtml });
       if (Platform.OS === 'ios') {
         await Sharing.shareAsync(uri);
       } else {
-        const pdfName = `${FileSystem.documentDirectory}${isSummaryReport ? 'summary_report.pdf' : 'shift_wise_report.pdf'}`;
+        const pdfName = `${FileSystem.documentDirectory}shift_wise_report.pdf`;
         await FileSystem.moveAsync({ from: uri, to: pdfName });
         await Sharing.shareAsync(pdfName);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
       Alert.alert('Error', 'Failed to fetch data or generate PDF.');
+    } finally {
+      setLoadingShiftWise(false);
     }
   };
 
-  const generateSummaryReportHtml = (data) => {
-    const groupedData = data.shift_wise_data.reduce((acc, shift) => {
-        shift.groups.forEach(group => {
-            if (!acc[group.group_name]) {
-                acc[group.group_name] = [];
-            }
-            acc[group.group_name].push({
-                shift_date: shift.shift_date,
-                shift_start_time: shift.shift_start_time,
-                shift_end_time: shift.shift_end_time,
-                shift_name: shift.shift_name || null,
-                shift_number: shift.shift_number,
-                machines: group.machines
-            });
-        });
-        return acc;
-    }, {});
-
-    const shiftHeaders = new Set();
-    Object.values(groupedData).forEach(shifts => {
-        shifts.forEach(shift => {
-            if (shift.shift_name && shift.shift_name !== '0') {
-                shiftHeaders.add(shift.shift_name);
-            } 
-            if (shift.shift_number && shift.shift_number !== '0') {
-                shiftHeaders.add(`Shift ${shift.shift_number}`);
-            }
-        });
-    });
-
+  const generateShiftWiseReportHtml = (data) => {
+    const shifts = data.shifts || [];
+    const filteredShifts = shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0);
+  
     const htmlContent = `
       <html>
         <head>
@@ -98,95 +86,102 @@ export default function DownloadScreen() {
             table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background-color: dodgerblue; color: white; }
-            h1 { text-align: center; }
+            h1 { text-align: center; margin-bottom: 10px; }
+            .info { text-align: center; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>Shift Wise Report</h1>
+          <div class="info">
+            <p>${data.machine_id ? `<strong>Machine:</strong> ${data.machine_id}` : ''}</p>
+            <p>${data.date ? `<strong>Date:</strong> ${data.date}` : ''}</p>
+          </div>
+          ${filteredShifts.length > 0 ? filteredShifts.map((shift) => `
+            <h2>Shift: ${shift.shift_name || `Shift ${shift.shift_no}`}</h2>
+            <table>
+              <tr>
+                <th>Time</th>
+                <th>Count</th>
+              </tr>
+              ${Object.entries(shift.timing).map(([time, count]) => `
+                <tr>
+                  <td>${time}</td>
+                  <td>${count}</td>
+                </tr>
+              `).join('')}
+            </table>
+          `).join('') : '<p>No shifts available for the selected date and machine.</p>'}
+        </body>
+      </html>
+    `;
+    return htmlContent;
+  };
+
+  const generateSummaryReportHtml = (data) => {
+    if (!data || !data.machine_groups) {
+      return '<p>No data available for the summary report.</p>';
+    }
+    const groupedData = data.machine_groups;
+
+    const shifts = new Set();
+    groupedData.forEach(group => {
+      group.machines.forEach(machine => {
+        machine.shifts.forEach(shift => {
+          if (shift.shift_name) {
+            shifts.add(shift.shift_name);
+          } else if (shift.shift_no) {
+            shifts.add(`Shift ${shift.shift_no}`);
+          }
+        });
+      });
+    });
+  
+    const shiftHeaders = Array.from(shifts);
+  
+    const htmlContent = `
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: dodgerblue; color: white; }
+            h1 { text-align: center; margin-bottom: 10px; }
             h2 { margin-top: 20px; }
           </style>
         </head>
         <body>
           <h1>Summary Report</h1>
-          ${Object.keys(groupedData).map(groupName => {
-            return `
-              <h2>Group: ${groupName}</h2>
-              <table>
-                <tr>
-                  <th>SI. No.</th>
-                  <th>Machine Name</th>
-                  ${Array.from(shiftHeaders).map(header => `<th>${header}</th>`).join('')}
-                </tr>
-                ${groupedData[groupName].flatMap((shift, shiftIndex) => 
-                  shift.machines.map((machine, machineIndex) => `
-                    <tr>
-                      <td>${machineIndex + 1}</td>
-                      <td>${machine.machine_name}</td>
-                      ${Array.from(shiftHeaders).map(header => {
-                          const shiftData = shift.shift_name === header || `Shift ${shift.shift_number}` === header ? 'Data Available' : '';
-                          return `<td>${shiftData}</td>`;
-                      }).join('')}
-                    </tr>
-                  `)
-                ).join('')}
-              </table>
-            `;
-          }).join('')}
-        </body>
-      </html>
-    `;
-  
-    return htmlContent;
-};
-
-  const generateShiftWiseReportHtml = (data) => {
-    const shiftsGroupedByShiftName = data.shift_wise_data.reduce((acc, shift) => {
-      if (!acc[shift.shift_name]) {
-        acc[shift.shift_name] = [];
-      }
-      acc[shift.shift_name].push(shift);
-      return acc;
-    }, {});
-
-    const htmlContent = `
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: dodgerblue; color: white; }
-            h1 { text-align: center; margin-bottom: 20px; }
-            h2 { margin-bottom: 10px; }
-          </style>
-        </head>
-        <body>
-          <h1>Shift Wise Report</h1>
-          ${Object.keys(shiftsGroupedByShiftName).map(shiftName => `
-            <h2>${shiftName}</h2>
+          ${groupedData.map(group => `
+            <h2>Group: ${group.group_name}</h2>
             <table>
               <tr>
-                <th>Date</th>
-                <th>Work Center</th>
-                <th>Shift Start</th>
-                <th>Shift End</th>
-                <th>Production Count</th>
+                <th>Machine ID</th>
+                ${shiftHeaders.map(header => `<th>${header}</th>`).join('')}
+                <th>Total Production</th>
               </tr>
-              ${shiftsGroupedByShiftName[shiftName].map((shift, shiftIndex) => `
-                ${shift.groups.map((group, groupIndex) => `
-                  ${group.machines.map((machine, machineIndex) => `
-                    <tr>
-                      <td>${shift.shift_date}</td>
-                      <td>${machine.machine_name}</td>
-                      <td>${shift.shift_start_time}</td>
-                      <td>${shift.shift_end_time}</td>
-                      <td>${machine.production_count}</td>
-                    </tr>
-                  `).join('')}
-                `).join('')}
-              `).join('')}
+              ${group.machines.map(machine => {
+                const productionCounts = shiftHeaders.map(header => {
+                  const shift = machine.shifts.find(s => s.shift_name === header || `Shift ${s.shift_no}` === header);
+                  return shift ? shift.production_count : '0';
+                }).join('</td><td>');
+  
+                const totalProduction = machine.shifts.reduce((total, shift) => total + (shift.production_count || 0), 0);
+  
+                return `
+                  <tr>
+                    <td>${machine.machine_id || 'N/A'}</td>
+                    <td>${productionCounts}</td>
+                    <td>${totalProduction}</td>
+                  </tr>
+                `;
+              }).join('')}
             </table>
           `).join('')}
         </body>
       </html>
     `;
-
+  
     return htmlContent;
   };
 
@@ -205,6 +200,42 @@ export default function DownloadScreen() {
   };
 
   const handleSearch = () => {
+    // fetchDataAndGeneratePDF();
+  };
+
+  const handleSummaryReport = async () => {
+    if (!selectedDate) {
+      Alert.alert('Missing Information', 'Please select a date.');
+      return;
+    }
+
+    setLoadingSummary(true);
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.post(`${BaseURL}data/production/`, {
+        date: selectedDate.toISOString().split('T')[0]
+      }, {
+        headers: { Authorization: `Token ${token}` }
+      });
+      console.log('API Response:', response.data);
+      const data = response.data;
+      const reportHtml = generateSummaryReportHtml(data);
+
+      const { uri } = await Print.printToFileAsync({ html: reportHtml });
+      if (Platform.OS === 'ios') {
+        await Sharing.shareAsync(uri);
+      } else {
+        const pdfName = `${FileSystem.documentDirectory}summary_report.pdf`;
+        await FileSystem.moveAsync({ from: uri, to: pdfName });
+        await Sharing.shareAsync(pdfName);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      Alert.alert('Error', 'Failed to fetch data or generate PDF.');
+    } finally {
+      setLoadingSummary(false);
+    }
   };
 
   return (
@@ -249,19 +280,21 @@ export default function DownloadScreen() {
       )}
       <View style={{ height: 100 }}></View>
       <View style={styles.buttonContainer}>
-      <Button
-        title="SUMMARY REPORT"
-        icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
-        buttonStyle={styles.button}
-        onPress={() => fetchDataAndGeneratePDF(true)}
-      />
-      <View style={{ height: 10 }}></View>
-      <Button
-        title="SHIFT WISE REPORT"
-        icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
-        buttonStyle={styles.button}
-        onPress={() => fetchDataAndGeneratePDF(false)}
-      />
+        <Button
+          title="SUMMARY REPORT"
+          icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
+          buttonStyle={styles.button}
+          onPress={handleSummaryReport}
+          loading={loadingSummary}
+        />
+        <View style={{ height: 10 }}></View>
+        <Button
+          title="SHIFT WISE REPORT"
+          icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
+          buttonStyle={styles.button}
+          onPress={fetchDataAndGeneratePDF}
+          loading={loadingShiftWise}
+        />
       </View>
     </ScrollView>
   );
