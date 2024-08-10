@@ -13,7 +13,7 @@ const ProductionScreen = () => {
   const [shiftHeaders, setShiftHeaders] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [searchDate, setSearchDate] = useState(null);
+  const [searchDate, setSearchDate] = useState(new Date());
 
   const fetchGroupData = async (date) => {
     try {
@@ -24,7 +24,7 @@ const ProductionScreen = () => {
       }
 
       const formattedDate = date.toISOString().split('T')[0];
-  
+
       const productionResponse = await axios.post(
         `${BaseURL}data/production/`,
         { date: formattedDate },
@@ -81,21 +81,15 @@ const ProductionScreen = () => {
   );
 
   useEffect(() => {
-    if (searchDate) {
-      fetchGroupData(searchDate);
-    }
+    fetchGroupData(searchDate);
   }, [searchDate]);
 
   const handleDateChange = (event, date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (date) {
       setSelectedDate(date);
-      setSearchDate(null);
+      setSearchDate(date);
     }
-  };
-
-  const handleSearchPress = () => {
-    setSearchDate(selectedDate);
   };
 
   return (
@@ -106,9 +100,6 @@ const ProductionScreen = () => {
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
             <Text style={styles.datePickerText}>{selectedDate.toISOString().split('T')[0]}</Text>
             <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={handleSearchPress}>
-            <Icon name="search" size={20} color="white" />
           </TouchableOpacity>
         </View>
         {showDatePicker && (
@@ -240,7 +231,7 @@ const styles = StyleSheet.create({
   datePickerText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 10,
+    fontSize: 14,
     marginRight: 10,
   },
   iconButton: {
