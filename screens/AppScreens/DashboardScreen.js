@@ -30,22 +30,44 @@ const DashboardScreen = () => {
     };
   }, []);
 
+  const checkToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return false;
+
+      await axios.get(`${BaseURL}Userauth/check-token/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      return true;
+    } catch (error) {
+      console.log('Token validation failed:', error);
+      return false;
+    }
+  };
+
   const fetchGroupData = async () => {
+    const isTokenValid = await checkToken();
+    if (!isTokenValid) {
+      navigation.navigate('Login');
+      return;
+    }
+
     try {
       const token = await AsyncStorage.getItem('token');
       const groupsResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
         headers: { Authorization: `Token ${token}` },
       });
-  
+
       const productionResponse = await axios.get(`${BaseURL}data/dashboard/`, {
         headers: { Authorization: `Token ${token}` },
       });
-  
+
       const productionData = productionResponse.data;
-  
+
       const updatedGroups = groupsResponse.data.map(group => {
         const productionGroup = productionData.find(pGroup => pGroup.group_id === group.group_id);
-  
+
         return {
           ...group,
           machines: group.machines.map(machine => {
