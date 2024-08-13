@@ -12,14 +12,14 @@ const hardCodedShifts = [
     shift_name: 'Shift 1',
     shift_number: 1,
     time_slots: [
-      { start_time: '06:30 AM', end_time: '07:30 AM', count: 0 },
-      { start_time: '07:30 AM', end_time: '08:30 AM', count: 0 },
-      { start_time: '08:30 AM', end_time: '09:30 AM', count: 0 },
-      { start_time: '09:30 AM', end_time: '10:30 AM', count: 0 },
-      { start_time: '10:30 AM', end_time: '11:30 AM', count: 0 },
-      { start_time: '11:30 AM', end_time: '12:30 PM', count: 0 },
-      { start_time: '12:30 PM', end_time: '01:30 PM', count: 0 },
-      { start_time: '01:30 PM', end_time: '02:30 PM', count: 0 },
+      { start_time: '06:30 AM', end_time: '07:30 AM', count: 0, actual: 0 },
+      { start_time: '07:30 AM', end_time: '08:30 AM', count: 0, actual: 0 },
+      { start_time: '08:30 AM', end_time: '09:30 AM', count: 0, actual: 0 },
+      { start_time: '09:30 AM', end_time: '10:30 AM', count: 0, actual: 0 },
+      { start_time: '10:30 AM', end_time: '11:30 AM', count: 0, actual: 0 },
+      { start_time: '11:30 AM', end_time: '12:30 PM', count: 0, actual: 0 },
+      { start_time: '12:30 PM', end_time: '01:30 PM', count: 0, actual: 0 },
+      { start_time: '01:30 PM', end_time: '02:30 PM', count: 0, actual: 0 },
     ],
     groups: [
       {
@@ -34,14 +34,14 @@ const hardCodedShifts = [
     shift_name: 'Shift 2',
     shift_number: 2,
     time_slots: [
-      { start_time: '02:30 PM', end_time: '03:30 PM', count: 0 },
-      { start_time: '03:30 PM', end_time: '04:30 PM', count: 0 },
-      { start_time: '04:30 PM', end_time: '05:30 PM', count: 0 },
-      { start_time: '05:30 PM', end_time: '06:30 PM', count: 0 },
-      { start_time: '06:30 PM', end_time: '07:30 PM', count: 0 },
-      { start_time: '07:30 PM', end_time: '08:30 PM', count: 0 },
-      { start_time: '08:30 PM', end_time: '09:30 PM', count: 0 },
-      { start_time: '09:30 PM', end_time: '10:30 PM', count: 0 },
+      { start_time: '02:30 PM', end_time: '03:30 PM', count: 0, actual: 0 },
+      { start_time: '03:30 PM', end_time: '04:30 PM', count: 0, actual: 0 },
+      { start_time: '04:30 PM', end_time: '05:30 PM', count: 0, actual: 0 },
+      { start_time: '05:30 PM', end_time: '06:30 PM', count: 0, actual: 0 },
+      { start_time: '06:30 PM', end_time: '07:30 PM', count: 0, actual: 0 },
+      { start_time: '07:30 PM', end_time: '08:30 PM', count: 0, actual: 0 },
+      { start_time: '08:30 PM', end_time: '09:30 PM', count: 0, actual: 0 },
+      { start_time: '09:30 PM', end_time: '10:30 PM', count: 0, actual: 0 },
     ],
     groups: [
       {
@@ -56,14 +56,14 @@ const hardCodedShifts = [
     shift_name: 'Shift 3',
     shift_number: 3,
     time_slots: [
-      { start_time: '10:30 PM', end_time: '11:30 PM', count: 0 },
-      { start_time: '11:30 PM', end_time: '12:30 AM', count: 0 },
-      { start_time: '12:30 AM', end_time: '01:30 AM', count: 0 },
-      { start_time: '01:30 AM', end_time: '02:30 AM', count: 0 },
-      { start_time: '02:30 AM', end_time: '03:30 AM', count: 0 },
-      { start_time: '03:30 AM', end_time: '04:30 AM', count: 0 },
-      { start_time: '04:30 AM', end_time: '05:30 AM', count: 0 },
-      { start_time: '05:30 AM', end_time: '06:30 AM', count: 0 },
+      { start_time: '10:30 PM', end_time: '11:30 PM', count: 0, actual: 0 },
+      { start_time: '11:30 PM', end_time: '12:30 AM', count: 0, actual: 0 },
+      { start_time: '12:30 AM', end_time: '01:30 AM', count: 0, actual: 0 },
+      { start_time: '01:30 AM', end_time: '02:30 AM', count: 0, actual: 0 },
+      { start_time: '02:30 AM', end_time: '03:30 AM', count: 0, actual: 0 },
+      { start_time: '03:30 AM', end_time: '04:30 AM', count: 0, actual: 0 },
+      { start_time: '04:30 AM', end_time: '05:30 AM', count: 0, actual: 0 },
+      { start_time: '05:30 AM', end_time: '06:30 AM', count: 0, actual: 0 },
     ],
     groups: [
       {
@@ -132,9 +132,9 @@ const ReportScreen = () => {
       console.log('Please select both machine and date');
       return;
     }
-  
+
     const selectedDateString = selectedDate.toISOString().split('T')[0];
-  
+
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post(
@@ -142,9 +142,9 @@ const ReportScreen = () => {
         { machine_id: selectedMachine, date: selectedDateString },
         { headers: { Authorization: `Token ${token}` } }
       );
-  
+
       const data = response.data;
-  
+
       const filteredShifts = data.shifts
         .filter((shift) => Object.keys(shift.timing).length > 0)
         .map((shift) => {
@@ -152,15 +152,16 @@ const ReportScreen = () => {
             start_time: time.split(' - ')[0],
             end_time: time.split(' - ')[1],
             count: shift.timing[time],
+            actual: shift.actual[time],
           }));
-  
+
           return {
             shift_name: shift.shift_name || `Shift ${shift.shift_no}`,
             shift_number: shift.shift_no,
             time_slots: timeSlots,
           };
         });
-  
+
       setSearchResults(filteredShifts);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -181,6 +182,10 @@ const ReportScreen = () => {
 
   const calculateShiftTotalCount = (shift) => {
     return shift.time_slots.reduce((total, slot) => total + slot.count, 0);
+  };
+
+  const calculateShiftTotalActual = (shift) => {
+    return shift.time_slots.reduce((total, slot) => total + slot.actual, 0);
   };
 
   return (
@@ -230,11 +235,13 @@ const ReportScreen = () => {
         ) : (
           searchResults.map((shift, shiftIndex) => {
             const shiftTotalCount = calculateShiftTotalCount(shift);
+            const shiftTotalActual = calculateShiftTotalActual(shift);
             return (
               <View key={shiftIndex} style={styles.groupContainer}>
                 <View style={{ height: 20 }}></View>
                 <Text style={styles.groupHeader}>{shift.shift_name}</Text>
                 <View style={styles.tableContainer}>
+                  <ScrollView horizontal>
                   <View style={styles.table}>
                     <View style={styles.row}>
                       <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
@@ -242,6 +249,9 @@ const ReportScreen = () => {
                       </View>
                       <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
                         <Text style={styles.headerText}>Production Count</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>Actual Count</Text>
                       </View>
                     </View>
                     {shift.time_slots.map((slot, index) => (
@@ -252,6 +262,9 @@ const ReportScreen = () => {
                         <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
                           <Text>{slot.count}</Text>
                         </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                          <Text>{slot.actual}</Text>
+                        </View>
                       </View>
                     ))}
                     <View style={styles.row}>
@@ -261,8 +274,12 @@ const ReportScreen = () => {
                       <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
                         <Text style={styles.headerText}>{shiftTotalCount}</Text>
                       </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                        <Text style={styles.headerText}>{shiftTotalActual}</Text>
+                      </View>
                     </View>
                   </View>
+                  </ScrollView>
                 </View>
               </View>
             );

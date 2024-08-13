@@ -77,6 +77,10 @@ export default function DownloadScreen() {
   const generateShiftWiseReportHtml = (data) => {
     const shifts = data.shifts || [];
     const filteredShifts = shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0);
+
+    const grandTotal = filteredShifts.reduce((total, shift) => {
+      return total + Object.values(shift.timing).reduce((shiftTotal, count) => shiftTotal + count, 0);
+    }, 0);
   
     const htmlContent = `
       <html>
@@ -87,30 +91,43 @@ export default function DownloadScreen() {
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background-color: dodgerblue; color: white; }
             h1 { text-align: center; margin-bottom: 10px; }
-            .info { text-align: center; margin-bottom: 20px; }
+            .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+            .info p { margin: 0; }
           </style>
         </head>
         <body>
-          <h1>Shift Wise Report</h1>
           <div class="info">
-            <p>${data.machine_id ? `<strong>Machine:</strong> ${data.machine_id}` : ''}</p>
+            <p>${data.machine_id ? `<strong>Machine ID:</strong> ${data.machine_id}` : ''}</p>
             <p>${data.date ? `<strong>Date:</strong> ${data.date}` : ''}</p>
           </div>
-          ${filteredShifts.length > 0 ? filteredShifts.map((shift) => `
-            <h2>Shift: ${shift.shift_name || `Shift ${shift.shift_no}`}</h2>
+          <h1>Shift Wise Report</h1>
+          ${filteredShifts.length > 0 ? `
             <table>
               <tr>
-                <th>Time</th>
-                <th>Count</th>
+                <th>Shifts</th>
+                <th>Time Range</th>
+                <th>Production Count</th>
+                <th>Total Production Count</th>
               </tr>
-              ${Object.entries(shift.timing).map(([time, count]) => `
-                <tr>
-                  <td>${time}</td>
-                  <td>${count}</td>
-                </tr>
-              `).join('')}
+              ${filteredShifts.map((shift) => {
+                const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
+                const totalProductionCount = Object.values(shift.timing).reduce((total, count) => total + count, 0);
+  
+                return Object.entries(shift.timing).map(([time, count], index) => `
+                  <tr>
+                    ${index === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${shiftName}</td>` : ''}
+                    <td>${time}</td>
+                    <td>${count}</td>
+                    ${index === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${totalProductionCount}</td>` : ''}
+                  </tr>
+                `).join('');
+              }).join('')}
+              <tr>
+                <td colspan="3"><strong>Grand Total</strong></td>
+                <td><strong>${grandTotal}</strong></td>
+              </tr>
             </table>
-          `).join('') : '<p>No shifts available for the selected date and machine.</p>'}
+          ` : '<p>No shifts available for the selected date and machine.</p>'}
         </body>
       </html>
     `;
@@ -122,7 +139,8 @@ export default function DownloadScreen() {
       return '<p>No data available for the summary report.</p>';
     }
     const groupedData = data.machine_groups;
-
+    const reportDate = data.date;
+  
     const shifts = new Set();
     groupedData.forEach(group => {
       group.machines.forEach(machine => {
@@ -143,24 +161,33 @@ export default function DownloadScreen() {
         <head>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background-color: dodgerblue; color: white; }
             h1 { text-align: center; margin-bottom: 10px; }
-            h2 { margin-top: 20px; }
+            .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+            .group-row { font-weight: bold; background-color: #f4f4f4; }
           </style>
         </head>
         <body>
+          <div class="info">
+            <div><strong>Date:</strong> ${reportDate || 'N/A'}</div>
+          </div>
           <h1>Summary Report</h1>
-          ${groupedData.map(group => `
-            <h2>Group: ${group.group_name}</h2>
-            <table>
-              <tr>
-                <th>Machine ID</th>
-                ${shiftHeaders.map(header => `<th>${header}</th>`).join('')}
-                <th>Total Production</th>
-              </tr>
-              ${group.machines.map(machine => {
+          <table>
+            <tr>
+              <th>Group</th>
+              <th>Work Center</th>
+              ${shiftHeaders.map(header => `<th>${header}</th>`).join('')}
+              <th>Production Count</th>
+              <th>Total Production Count</th>
+            </tr>
+            ${groupedData.flatMap(group => {
+              const groupTotalProduction = group.machines.reduce((total, machine) => {
+                return total + machine.shifts.reduce((shiftTotal, shift) => shiftTotal + (shift.production_count || 0), 0);
+              }, 0);
+  
+              return group.machines.map(machine => {
                 const productionCounts = shiftHeaders.map(header => {
                   const shift = machine.shifts.find(s => s.shift_name === header || `Shift ${s.shift_no}` === header);
                   return shift ? shift.production_count : '0';
@@ -170,14 +197,16 @@ export default function DownloadScreen() {
   
                 return `
                   <tr>
+                    ${machine === group.machines[0] ? `<td rowspan="${group.machines.length}" class="group-row">${group.group_name}</td>` : ''}
                     <td>${machine.machine_id || 'N/A'}</td>
                     <td>${productionCounts}</td>
                     <td>${totalProduction}</td>
+                    ${machine === group.machines[0] ? `<td rowspan="${group.machines.length}" class="group-row">${groupTotalProduction}</td>` : ''}
                   </tr>
                 `;
-              }).join('')}
-            </table>
-          `).join('')}
+              });
+            }).join('')}
+          </table>
         </body>
       </html>
     `;
