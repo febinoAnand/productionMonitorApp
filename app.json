@@ -24,6 +24,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "667f9ce3-662b-4e8a-a3a8-5b1f53d50770"
