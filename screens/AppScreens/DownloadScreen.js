@@ -77,10 +77,20 @@ export default function DownloadScreen() {
   const generateShiftWiseReportHtml = (data) => {
     const shifts = data.shifts || [];
     const filteredShifts = shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0);
-
-    const grandTotal = filteredShifts.reduce((total, shift) => {
-      return total + Object.values(shift.timing).reduce((shiftTotal, count) => shiftTotal + count, 0);
-    }, 0);
+  
+    // Calculate grand totals for production and actual counts
+    const grandTotal = filteredShifts.reduce((totals, shift) => {
+      const { production, actual } = Object.values(shift.timing).reduce((acc, [productionCount, actualCount]) => {
+        acc.production += productionCount;
+        acc.actual += actualCount;
+        return acc;
+      }, { production: 0, actual: 0 });
+  
+      return {
+        production: totals.production + production,
+        actual: totals.actual + actual
+      };
+    }, { production: 0, actual: 0 });
   
     const htmlContent = `
       <html>
@@ -106,25 +116,26 @@ export default function DownloadScreen() {
               <tr>
                 <th>Shifts</th>
                 <th>Time Range</th>
-                <th>Production Count</th>
+                <th>Production Count / Actual Count</th>
                 <th>Total Production Count</th>
               </tr>
               ${filteredShifts.map((shift) => {
                 const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
-                const totalProductionCount = Object.values(shift.timing).reduce((total, count) => total + count, 0);
+                const totalProductionCount = Object.values(shift.timing).reduce((total, [productionCount]) => total + productionCount, 0);
+                const totalActualCount = Object.values(shift.timing).reduce((total, [, actualCount]) => total + actualCount, 0);
   
-                return Object.entries(shift.timing).map(([time, count], index) => `
+                return Object.entries(shift.timing).map(([time, [productionCount, actualCount]]) => `
                   <tr>
-                    ${index === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${shiftName}</td>` : ''}
+                    ${Object.keys(shift.timing).indexOf(time) === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${shiftName}</td>` : ''}
                     <td>${time}</td>
-                    <td>${count}</td>
-                    ${index === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${totalProductionCount}</td>` : ''}
+                    <td>${productionCount}/${actualCount}</td>
+                    ${Object.keys(shift.timing).indexOf(time) === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${totalProductionCount}/${totalActualCount}</td>` : ''}
                   </tr>
                 `).join('');
               }).join('')}
               <tr>
                 <td colspan="3"><strong>Grand Total</strong></td>
-                <td><strong>${grandTotal}</strong></td>
+                <td><strong>${grandTotal.production}/${grandTotal.actual}</strong></td>
               </tr>
             </table>
           ` : '<p>No shifts available for the selected date and machine.</p>'}
@@ -184,16 +195,16 @@ export default function DownloadScreen() {
             </tr>
             ${groupedData.flatMap(group => {
               const groupTotalProduction = group.machines.reduce((total, machine) => {
-                return total + machine.shifts.reduce((shiftTotal, shift) => shiftTotal + (shift.production_count || 0), 0);
+                return total + machine.shifts.reduce((shiftTotal, shift) => shiftTotal + (shift.total_shift_production_count || 0), 0);
               }, 0);
   
               return group.machines.map(machine => {
                 const productionCounts = shiftHeaders.map(header => {
                   const shift = machine.shifts.find(s => s.shift_name === header || `Shift ${s.shift_no}` === header);
-                  return shift ? shift.production_count : '0';
+                  return shift ? shift.total_shift_production_count : '0';
                 }).join('</td><td>');
   
-                const totalProduction = machine.shifts.reduce((total, shift) => total + (shift.production_count || 0), 0);
+                const totalProduction = machine.shifts.reduce((total, shift) => total + (shift.total_shift_production_count || 0), 0);
   
                 return `
                   <tr>
