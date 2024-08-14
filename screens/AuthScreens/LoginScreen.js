@@ -165,6 +165,7 @@ export default function Login({ navigation }) {
                         await AsyncStorage.setItem('expiry_time', ""+user_expiry_time);
                         console.log("expire time ==>",user_expiry_time)
                             navigation.replace("TabScreen");
+                            // navigation.replace("TestDashboard");
                     }
                     else if(status === "INVALID"){
                         

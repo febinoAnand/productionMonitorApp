@@ -8,7 +8,6 @@ import ReportScreen from '../screens/AppScreens/ReportScreen';
 import SettingsScreen from '../screens/AppScreens/SettingScreen';
 import DownloadScreen from '../screens/AppScreens/DownloadScreen';
 import ProductionScreen from '../screens/AppScreens/ProductionScreen';
-import * as ScreenOrientation from 'expo-screen-orientation';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -25,18 +24,6 @@ const MainStack = () => (
 );
 
 export function TabGroup() {
-  const [orientation, setOrientation] = useState(ScreenOrientation.Orientation.UNKNOWN);
-
-  useEffect(() => {
-    const orientationChangeListener = ({ orientationInfo }) => {
-      setOrientation(orientationInfo.orientation);
-    };
-
-    const subscription = ScreenOrientation.addOrientationChangeListener(orientationChangeListener);
-    return () => {
-      ScreenOrientation.removeOrientationChangeListener(subscription);
-    };
-  }, []);
 
   return (
     <Tab.Navigator
@@ -57,9 +44,6 @@ export function TabGroup() {
           }
 
           return <Icon name={iconName} size={size} color={color} />;
-        },
-        tabBarStyle: {
-          display: orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT || orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT ? 'none' : 'flex',
         },
       })}
     >

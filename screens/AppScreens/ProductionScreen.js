@@ -122,7 +122,7 @@ const ProductionScreen = () => {
               machineShifts.forEach(shift => {
                 const shiftHeader = shift.shift_name || `${shift.shift_no}`;
                 if (shiftHeaders.includes(shiftHeader)) {
-                  totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.production_count;
+                  totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.total_shift_production_count;
                 }
               });
             });
@@ -152,7 +152,7 @@ const ProductionScreen = () => {
                         const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
                           const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
                           if (shift) {
-                            acc.count += shift.production_count;
+                            acc.count += shift.total_shift_production_count;
                           }
                           return acc;
                         }, { count: 0 });
@@ -166,7 +166,7 @@ const ProductionScreen = () => {
                               const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
                               return (
                                 <View key={idx} style={[styles.cell, styles.columnValue, { width: 150 }]}>
-                                  <Text>{shift ? shift.production_count : 0}</Text>
+                                  <Text>{shift ? shift.total_shift_production_count : 0}</Text>
                                 </View>
                               );
                             })}

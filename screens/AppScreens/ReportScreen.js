@@ -132,9 +132,9 @@ const ReportScreen = () => {
       console.log('Please select both machine and date');
       return;
     }
-
+  
     const selectedDateString = selectedDate.toISOString().split('T')[0];
-
+  
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post(
@@ -142,26 +142,26 @@ const ReportScreen = () => {
         { machine_id: selectedMachine, date: selectedDateString },
         { headers: { Authorization: `Token ${token}` } }
       );
-
+  
       const data = response.data;
-
+  
       const filteredShifts = data.shifts
         .filter((shift) => Object.keys(shift.timing).length > 0)
         .map((shift) => {
           const timeSlots = Object.keys(shift.timing).map(time => ({
             start_time: time.split(' - ')[0],
             end_time: time.split(' - ')[1],
-            count: shift.timing[time],
-            actual: shift.actual[time],
+            count: shift.timing[time][0],
+            actual: shift.timing[time][1],
           }));
-
+  
           return {
             shift_name: shift.shift_name || `Shift ${shift.shift_no}`,
             shift_number: shift.shift_no,
             time_slots: timeSlots,
           };
         });
-
+  
       setSearchResults(filteredShifts);
     } catch (error) {
       console.error('Error fetching data:', error);
