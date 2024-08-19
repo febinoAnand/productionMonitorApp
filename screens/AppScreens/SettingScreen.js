@@ -130,7 +130,7 @@ export default function Settings({ navigation }) {
             <View style={styles.box}>
                 <Text style={styles.header}>Device</Text>
                 <Input
-                    placeholder="2.1"
+                    placeholder="1.0.0"
                     editable={false}
                     selectTextOnFocus={false}
                     leftIcon={<Icon name="mobile" type="font-awesome" size={24} color="dodgerblue" />}
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     header: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'dodgerblue',
     },
     inputStyle: {
-        fontSize: 16,
+        fontSize: 12,
         marginLeft: 10,
         color: 'gray'
     },

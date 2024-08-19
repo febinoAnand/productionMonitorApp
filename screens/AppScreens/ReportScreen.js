@@ -233,58 +233,62 @@ const ReportScreen = () => {
         {searchResults.length === 0 ? (
           <Text style={styles.messageText}>No data available.</Text>
         ) : (
-          searchResults.map((shift, shiftIndex) => {
-            const shiftTotalCount = calculateShiftTotalCount(shift);
-            const shiftTotalActual = calculateShiftTotalActual(shift);
-            return (
-              <View key={shiftIndex} style={styles.groupContainer}>
-                <View style={{ height: 20 }}></View>
-                <Text style={styles.groupHeader}>{shift.shift_name}</Text>
-                <View style={styles.tableContainer}>
-                  <ScrollView horizontal>
-                  <View style={styles.table}>
-                    <View style={styles.row}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Time</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Production Count</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Actual Count</Text>
-                      </View>
-                    </View>
-                    {shift.time_slots.map((slot, index) => (
-                      <View key={index} style={styles.row}>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{`${slot.start_time} - ${slot.end_time}`}</Text>
+          <View style={styles.whiteContainer}>
+            {searchResults.map((shift, shiftIndex) => {
+              const shiftTotalCount = calculateShiftTotalCount(shift);
+              const shiftTotalActual = calculateShiftTotalActual(shift);
+              return (
+                <View key={shiftIndex} style={styles.groupContainer}>
+                  <View style={{ height: 20 }}></View>
+                  <Text style={styles.groupHeader}>{shift.shift_name}</Text>
+                  <View style={styles.tableContainer}>
+                    <View style={styles.table}>
+                      <View style={styles.row}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                          <Text style={styles.headerText}>Time</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{slot.count}</Text>
+                        <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
+                          <Text style={styles.headerText}>PC</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{slot.actual}</Text>
+                        <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
+                          <Text style={styles.headerText}>AC</Text>
                         </View>
                       </View>
-                    ))}
-                    <View style={styles.row}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                      {shift.time_slots.map((slot, index) => (
+                        <View key={index} style={styles.row}>
+                          <View style={[styles.cell, styles.columnValue, { width: 150 }]}>
+                            <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 120 }]}>
+                            <Text style={styles.valueText}>{slot.count}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 120 }]}>
+                            <Text style={styles.valueText}>{slot.actual}</Text>
+                          </View>
+                        </View>
+                      ))}
+                      <View style={styles.row}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                         <Text style={styles.headerText}>Total</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
                         <Text style={styles.headerText}>{shiftTotalCount}</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
                         <Text style={styles.headerText}>{shiftTotalActual}</Text>
+                      </View>
                       </View>
                     </View>
                   </View>
-                  </ScrollView>
+                  {shiftIndex < searchResults.length - 1 && (
+                    <View style={styles.dividerLine} />
+                  )}
                 </View>
-              </View>
-            );
-          })
+              );
+            })}
+          </View>
         )}
+        <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
   );
@@ -337,11 +341,34 @@ const styles = StyleSheet.create({
     width: 100,
     marginTop: 10,
   },
+  whiteContainer: {
+    width: '105%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
+  },
+  dividerLine: {
+    height: 2,
+    width: '100%',
+    backgroundColor: 'gray',
+    marginVertical: 20,
+  },
   groupContainer: {
     width: '100%',
-    marginBottom: 20,
   },
   groupHeader: {
+    bottom: 20,
     fontSize: 20,
     fontWeight: 'bold',
     color: 'dodgerblue',
@@ -350,6 +377,7 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: '100%',
+    bottom: 20,
     justifyContent: 'flex-start',
     alignItems: 'stretch',
     padding: 10,
@@ -389,6 +417,10 @@ const styles = StyleSheet.create({
   headerText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 10
+  },
+  valueText: {
+    fontSize: 10
   },
   messageText: {
     fontSize: 16,

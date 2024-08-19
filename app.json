@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "MobileApp",
+    "name": "Productionmonitor App",
     "slug": "productionmonitor",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/AppMando.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -16,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/AppMando.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.richianand1990.productionmonitor"
