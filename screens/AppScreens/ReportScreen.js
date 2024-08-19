@@ -244,37 +244,37 @@ const ReportScreen = () => {
                   <View style={styles.tableContainer}>
                     <View style={styles.table}>
                       <View style={styles.row}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
                           <Text style={styles.headerText}>Time</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                           <Text style={styles.headerText}>PC</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                           <Text style={styles.headerText}>AC</Text>
                         </View>
                       </View>
                       {shift.time_slots.map((slot, index) => (
                         <View key={index} style={styles.row}>
-                          <View style={[styles.cell, styles.columnValue, { width: 150 }]}>
+                          <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
                             <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
                           </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 120 }]}>
+                          <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
                             <Text style={styles.valueText}>{slot.count}</Text>
                           </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 120 }]}>
+                          <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
                             <Text style={styles.valueText}>{slot.actual}</Text>
                           </View>
                         </View>
                       ))}
                       <View style={styles.row}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
                         <Text style={styles.headerText}>Total</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                         <Text style={styles.headerText}>{shiftTotalCount}</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 120 }]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                         <Text style={styles.headerText}>{shiftTotalActual}</Text>
                       </View>
                       </View>
