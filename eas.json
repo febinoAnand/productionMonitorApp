@@ -8,6 +8,7 @@
       "distribution": "internal"
     },
     "preview": {
+      
       "distribution": "internal",
       "env": { 
         "ANDROID_SDK_ROOT": "/Users/Anandkumar/Library/Android/sdk" 

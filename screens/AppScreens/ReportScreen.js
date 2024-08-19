@@ -253,6 +253,9 @@ const ReportScreen = () => {
                         <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                           <Text style={styles.headerText}>AC</Text>
                         </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
+                          <Text>{slot.actual}</Text>
+                        </View>
                       </View>
                       {shift.time_slots.map((slot, index) => (
                         <View key={index} style={styles.row}>
