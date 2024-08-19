@@ -253,9 +253,6 @@ const ReportScreen = () => {
                         <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                           <Text style={styles.headerText}>AC</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{slot.actual}</Text>
-                        </View>
                       </View>
                       {shift.time_slots.map((slot, index) => (
                         <View key={index} style={styles.row}>
@@ -271,15 +268,15 @@ const ReportScreen = () => {
                         </View>
                       ))}
                       <View style={styles.row}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
-                        <Text style={styles.headerText}>Total</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                        <Text style={styles.headerText}>{shiftTotalCount}</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                        <Text style={styles.headerText}>{shiftTotalActual}</Text>
-                      </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                          <Text style={styles.headerText}>Total</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                          <Text style={styles.headerText}>{shiftTotalCount}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                          <Text style={styles.headerText}>{shiftTotalActual}</Text>
+                        </View>
                       </View>
                     </View>
                   </View>
