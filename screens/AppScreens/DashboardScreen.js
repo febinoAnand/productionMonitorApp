@@ -1,47 +1,69 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
+// import * as ScreenOrientation from 'expo-screen-orientation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
 const DashboardScreen = () => {
-  const [orientation, setOrientation] = useState(ScreenOrientation.Orientation.UNKNOWN);
+  // const [orientation, setOrientation] = useState(ScreenOrientation.Orientation.UNKNOWN);
   const [groups, setGroups] = useState([]);
   const intervalRef = useRef(null);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const lockOrientation = async () => {
-      await ScreenOrientation.lockAsync(ScreenOrientation.Orientation.PORTRAIT_UP);
-      setOrientation(ScreenOrientation.Orientation.PORTRAIT_UP);
-    };
+  // useEffect(() => {
+  //   const lockOrientation = async () => {
+  //     await ScreenOrientation.lockAsync(ScreenOrientation.Orientation.PORTRAIT_UP);
+  //     setOrientation(ScreenOrientation.Orientation.PORTRAIT_UP);
+  //   };
 
-    lockOrientation();
+  //   lockOrientation();
 
-    const orientationChangeListener = ({ orientationInfo }) => {
-      setOrientation(orientationInfo.orientation);
-    };
+  //   const orientationChangeListener = ({ orientationInfo }) => {
+  //     setOrientation(orientationInfo.orientation);
+  //   };
 
-    const subscription = ScreenOrientation.addOrientationChangeListener(orientationChangeListener);
-    return () => {
-      ScreenOrientation.removeOrientationChangeListener(subscription);
-    };
-  }, []);
+  //   const subscription = ScreenOrientation.addOrientationChangeListener(orientationChangeListener);
+  //   return () => {
+  //     ScreenOrientation.removeOrientationChangeListener(subscription);
+  //   };
+  // }, []);
+
+  const checkToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return false;
+
+      await axios.get(`${BaseURL}Userauth/check-token/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      return true;
+    } catch (error) {
+      console.log('Token validation failed:', error);
+      return false;
+    }
+  };
 
   const fetchGroupData = async () => {
+    const isTokenValid = await checkToken();
+    if (!isTokenValid) {
+      navigation.navigate('Login');
+      return;
+    }
+  
     try {
       const token = await AsyncStorage.getItem('token');
       const groupsResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
         headers: { Authorization: `Token ${token}` },
       });
   
-      const productionResponse = await axios.get(`${BaseURL}data/dashboard/`, {
+      const productionResponse = await axios.get(`${BaseURL}data/dashboard-data/`, {
         headers: { Authorization: `Token ${token}` },
       });
   
-      const productionData = productionResponse.data;
+      const productionData = productionResponse.data.groups;
   
       const updatedGroups = groupsResponse.data.map(group => {
         const productionGroup = productionData.find(pGroup => pGroup.group_id === group.group_id);

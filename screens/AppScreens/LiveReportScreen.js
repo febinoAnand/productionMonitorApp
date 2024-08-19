@@ -10,8 +10,8 @@ const LiveReportScreen = () => {
   const route = useRoute();
   const { id } = route.params || {};
   const [machineDetails, setMachineDetails] = useState(null);
-  const [productionData, setProductionData] = useState([]);
   const [machineData, setMachineData] = useState([]);
+  const [totalProduction, setTotalProduction] = useState({ total_production_count: 'N/A', total_target_production: 'N/A' });
   const [currentTime, setCurrentTime] = useState(new Date());
   const intervalRef = useRef(null);
   const isMounted = useRef(true);
@@ -54,8 +54,8 @@ const LiveReportScreen = () => {
 
       if (selectedMachineDetails && isMounted.current) {
         setMachineDetails(selectedMachineDetails);
-        setProductionData(selectedMachineDetails.production_data || []);
         setMachineData(selectedMachineDetails.machine_data || []);
+        setTotalProduction(data.total_production || { total_production_count: '0', total_target_production: '0' });
       } else {
         console.warn('No details found for the selected machine.');
       }
@@ -96,7 +96,6 @@ const LiveReportScreen = () => {
     };
   }, [stopFetchingData]);
 
-  const safeProductionData = Array.isArray(productionData) ? productionData : [];
   const safeMachineData = Array.isArray(machineData) ? machineData : [];
 
   const getCurrentDate = () => {
@@ -153,9 +152,7 @@ const LiveReportScreen = () => {
           <Text style={styles.headerText}>PRODUCTION DATA</Text>
         </View>
         <View style={styles.tableContainer}>
-          {safeProductionData.length > 0 ? (
-            safeProductionData.map((item, index) => (
-              <View key={index}>
+              <View>
                 <View style={styles.row1}>
                   <View style={[styles.cell1, styles.columnHeader1]}>
                     <Text>Date</Text>
@@ -177,7 +174,7 @@ const LiveReportScreen = () => {
                     <Text>Today's Count</Text>
                   </View>
                   <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{item.production_count || 'N/A'}</Text>
+                    <Text>{totalProduction.total_production_count || '0'}</Text>
                   </View>
                 </View>
                 <View style={styles.row1}>
@@ -185,48 +182,11 @@ const LiveReportScreen = () => {
                     <Text>Target Reading</Text>
                   </View>
                   <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{item.target_production || 'N/A'}</Text>
+                    <Text>{totalProduction.total_target_production || '0'}</Text>
                   </View>
                 </View>
               </View>
-            ))
-          ) : (
-            <View>
-              <View style={styles.row1}>
-                <View style={[styles.cell1, styles.columnHeader1]}>
-                  <Text>Date</Text>
-                </View>
-                <View style={[styles.cell1, styles.columnValue1]}>
-                  <Text>{getCurrentDate()}</Text>
-                </View>
               </View>
-              <View style={styles.row1}>
-                <View style={[styles.cell1, styles.columnHeader1]}>
-                  <Text>Time</Text>
-                </View>
-                <View style={[styles.cell1, styles.columnValue1]}>
-                  <Text>{getCurrentTime()}</Text>
-                </View>
-              </View>
-              <View style={styles.row1}>
-                <View style={[styles.cell1, styles.columnHeader1]}>
-                  <Text>Today's Count</Text>
-                </View>
-                <View style={[styles.cell1, styles.columnValue1]}>
-                  <Text>N/A</Text>
-                </View>
-              </View>
-              <View style={styles.row1}>
-                <View style={[styles.cell1, styles.columnHeader1]}>
-                  <Text>Target Reading</Text>
-                </View>
-                <View style={[styles.cell1, styles.columnValue1]}>
-                  <Text>N/A</Text>
-                </View>
-              </View>
-            </View>
-          )}
-        </View>
 
         <View style={styles.additionalHeader}>
           <Text style={styles.additionalHeaderText}>PRODUCTION CHART</Text>

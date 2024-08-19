@@ -12,14 +12,14 @@ const hardCodedShifts = [
     shift_name: 'Shift 1',
     shift_number: 1,
     time_slots: [
-      { start_time: '06:30 AM', end_time: '07:30 AM', count: 0 },
-      { start_time: '07:30 AM', end_time: '08:30 AM', count: 0 },
-      { start_time: '08:30 AM', end_time: '09:30 AM', count: 0 },
-      { start_time: '09:30 AM', end_time: '10:30 AM', count: 0 },
-      { start_time: '10:30 AM', end_time: '11:30 AM', count: 0 },
-      { start_time: '11:30 AM', end_time: '12:30 PM', count: 0 },
-      { start_time: '12:30 PM', end_time: '01:30 PM', count: 0 },
-      { start_time: '01:30 PM', end_time: '02:30 PM', count: 0 },
+      { start_time: '06:30 AM', end_time: '07:30 AM', count: 0, actual: 0 },
+      { start_time: '07:30 AM', end_time: '08:30 AM', count: 0, actual: 0 },
+      { start_time: '08:30 AM', end_time: '09:30 AM', count: 0, actual: 0 },
+      { start_time: '09:30 AM', end_time: '10:30 AM', count: 0, actual: 0 },
+      { start_time: '10:30 AM', end_time: '11:30 AM', count: 0, actual: 0 },
+      { start_time: '11:30 AM', end_time: '12:30 PM', count: 0, actual: 0 },
+      { start_time: '12:30 PM', end_time: '01:30 PM', count: 0, actual: 0 },
+      { start_time: '01:30 PM', end_time: '02:30 PM', count: 0, actual: 0 },
     ],
     groups: [
       {
@@ -34,14 +34,14 @@ const hardCodedShifts = [
     shift_name: 'Shift 2',
     shift_number: 2,
     time_slots: [
-      { start_time: '02:30 PM', end_time: '03:30 PM', count: 0 },
-      { start_time: '03:30 PM', end_time: '04:30 PM', count: 0 },
-      { start_time: '04:30 PM', end_time: '05:30 PM', count: 0 },
-      { start_time: '05:30 PM', end_time: '06:30 PM', count: 0 },
-      { start_time: '06:30 PM', end_time: '07:30 PM', count: 0 },
-      { start_time: '07:30 PM', end_time: '08:30 PM', count: 0 },
-      { start_time: '08:30 PM', end_time: '09:30 PM', count: 0 },
-      { start_time: '09:30 PM', end_time: '10:30 PM', count: 0 },
+      { start_time: '02:30 PM', end_time: '03:30 PM', count: 0, actual: 0 },
+      { start_time: '03:30 PM', end_time: '04:30 PM', count: 0, actual: 0 },
+      { start_time: '04:30 PM', end_time: '05:30 PM', count: 0, actual: 0 },
+      { start_time: '05:30 PM', end_time: '06:30 PM', count: 0, actual: 0 },
+      { start_time: '06:30 PM', end_time: '07:30 PM', count: 0, actual: 0 },
+      { start_time: '07:30 PM', end_time: '08:30 PM', count: 0, actual: 0 },
+      { start_time: '08:30 PM', end_time: '09:30 PM', count: 0, actual: 0 },
+      { start_time: '09:30 PM', end_time: '10:30 PM', count: 0, actual: 0 },
     ],
     groups: [
       {
@@ -56,14 +56,14 @@ const hardCodedShifts = [
     shift_name: 'Shift 3',
     shift_number: 3,
     time_slots: [
-      { start_time: '10:30 PM', end_time: '11:30 PM', count: 0 },
-      { start_time: '11:30 PM', end_time: '12:30 AM', count: 0 },
-      { start_time: '12:30 AM', end_time: '01:30 AM', count: 0 },
-      { start_time: '01:30 AM', end_time: '02:30 AM', count: 0 },
-      { start_time: '02:30 AM', end_time: '03:30 AM', count: 0 },
-      { start_time: '03:30 AM', end_time: '04:30 AM', count: 0 },
-      { start_time: '04:30 AM', end_time: '05:30 AM', count: 0 },
-      { start_time: '05:30 AM', end_time: '06:30 AM', count: 0 },
+      { start_time: '10:30 PM', end_time: '11:30 PM', count: 0, actual: 0 },
+      { start_time: '11:30 PM', end_time: '12:30 AM', count: 0, actual: 0 },
+      { start_time: '12:30 AM', end_time: '01:30 AM', count: 0, actual: 0 },
+      { start_time: '01:30 AM', end_time: '02:30 AM', count: 0, actual: 0 },
+      { start_time: '02:30 AM', end_time: '03:30 AM', count: 0, actual: 0 },
+      { start_time: '03:30 AM', end_time: '04:30 AM', count: 0, actual: 0 },
+      { start_time: '04:30 AM', end_time: '05:30 AM', count: 0, actual: 0 },
+      { start_time: '05:30 AM', end_time: '06:30 AM', count: 0, actual: 0 },
     ],
     groups: [
       {
@@ -151,7 +151,8 @@ const ReportScreen = () => {
           const timeSlots = Object.keys(shift.timing).map(time => ({
             start_time: time.split(' - ')[0],
             end_time: time.split(' - ')[1],
-            count: shift.timing[time],
+            count: shift.timing[time][0],
+            actual: shift.timing[time][1],
           }));
   
           return {
@@ -181,6 +182,10 @@ const ReportScreen = () => {
 
   const calculateShiftTotalCount = (shift) => {
     return shift.time_slots.reduce((total, slot) => total + slot.count, 0);
+  };
+
+  const calculateShiftTotalActual = (shift) => {
+    return shift.time_slots.reduce((total, slot) => total + slot.actual, 0);
   };
 
   return (
@@ -228,46 +233,62 @@ const ReportScreen = () => {
         {searchResults.length === 0 ? (
           <Text style={styles.messageText}>No data available.</Text>
         ) : (
-          searchResults.map((shift, shiftIndex) => {
-            const shiftTotalCount = calculateShiftTotalCount(shift);
-            return (
-              <View key={shiftIndex} style={styles.groupContainer}>
-                <View style={{ height: 20 }}></View>
-                <Text style={styles.groupHeader}>{shift.shift_name}</Text>
-                <View style={styles.tableContainer}>
-                  <View style={styles.table}>
-                    <View style={styles.row}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Time</Text>
-                      </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
-                        <Text style={styles.headerText}>Production Count</Text>
-                      </View>
-                    </View>
-                    {shift.time_slots.map((slot, index) => (
-                      <View key={index} style={styles.row}>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{`${slot.start_time} - ${slot.end_time}`}</Text>
+          <View style={styles.whiteContainer}>
+            {searchResults.map((shift, shiftIndex) => {
+              const shiftTotalCount = calculateShiftTotalCount(shift);
+              const shiftTotalActual = calculateShiftTotalActual(shift);
+              return (
+                <View key={shiftIndex} style={styles.groupContainer}>
+                  <View style={{ height: 20 }}></View>
+                  <Text style={styles.groupHeader}>{shift.shift_name}</Text>
+                  <View style={styles.tableContainer}>
+                    <View style={styles.table}>
+                      <View style={styles.row}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                          <Text style={styles.headerText}>Time</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnValue, { width: 170 }]}>
-                          <Text>{slot.count}</Text>
+                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                          <Text style={styles.headerText}>PC</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                          <Text style={styles.headerText}>AC</Text>
                         </View>
                       </View>
-                    ))}
-                    <View style={styles.row}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                      {shift.time_slots.map((slot, index) => (
+                        <View key={index} style={styles.row}>
+                          <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
+                            <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                            <Text style={styles.valueText}>{slot.count}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                            <Text style={styles.valueText}>{slot.actual}</Text>
+                          </View>
+                        </View>
+                      ))}
+                      <View style={styles.row}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
                         <Text style={styles.headerText}>Total</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnHeader, { width: 170 }]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
                         <Text style={styles.headerText}>{shiftTotalCount}</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <Text style={styles.headerText}>{shiftTotalActual}</Text>
+                      </View>
                       </View>
                     </View>
                   </View>
+                  {shiftIndex < searchResults.length - 1 && (
+                    <View style={styles.dividerLine} />
+                  )}
                 </View>
-              </View>
-            );
-          })
+              );
+            })}
+          </View>
         )}
+        <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
   );
@@ -320,11 +341,34 @@ const styles = StyleSheet.create({
     width: 100,
     marginTop: 10,
   },
+  whiteContainer: {
+    width: '105%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
+  },
+  dividerLine: {
+    height: 2,
+    width: '100%',
+    backgroundColor: 'gray',
+    marginVertical: 20,
+  },
   groupContainer: {
     width: '100%',
-    marginBottom: 20,
   },
   groupHeader: {
+    bottom: 20,
     fontSize: 20,
     fontWeight: 'bold',
     color: 'dodgerblue',
@@ -333,6 +377,7 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     width: '100%',
+    bottom: 20,
     justifyContent: 'flex-start',
     alignItems: 'stretch',
     padding: 10,
@@ -372,6 +417,10 @@ const styles = StyleSheet.create({
   headerText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 10
+  },
+  valueText: {
+    fontSize: 10
   },
   messageText: {
     fontSize: 16,

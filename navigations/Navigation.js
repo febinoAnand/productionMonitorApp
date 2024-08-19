@@ -5,6 +5,7 @@ import LoginScreen from '../screens/AuthScreens/LoginScreen';
 import SignUpScreen from '../screens/AuthScreens/SignupScreen';
 import OTPScreen from '../screens/AuthScreens/OTPScreen';
 import RegistrationScreen from '../screens/AuthScreens/RegistrationScreen';
+// import TestDashboard from '../screens/AuthScreens/testdashboard';
 import { TabGroup } from './TabNavigation';
 import Splash from '../screens/AuthScreens/splash';
 
@@ -19,6 +20,7 @@ export default function Navigation() {
         <Stack.Screen name="OTP" component={OTPScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Registration" component={RegistrationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        {/* <Stack.Screen name="TestDashboard" component={TestDashboard} options={{ headerShown: false }} /> */}
         <Stack.Screen name="TabScreen" component={TabGroup} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
