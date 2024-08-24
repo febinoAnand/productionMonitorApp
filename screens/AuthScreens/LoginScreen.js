@@ -60,9 +60,16 @@ export default function Login({ navigation }) {
 
     const getIDs = async ()=>{
         const emailID = await AsyncStorage.getItem("emailID");
-        setDeviceID(await SecureStore.getItemAsync("deviceID"))
-        setExpoID(await AsyncStorage.getItem("applicationID"))
+        const demoDeviceID = '14844490-da5d-4c67-9f4d-3dd4b0cb2294';
 
+        if (emailID === 'demo@ifm.com') {
+            setDeviceID(demoDeviceID);
+        } else {
+            setDeviceID(await SecureStore.getItemAsync("deviceID"));
+        }
+    
+        setExpoID(await AsyncStorage.getItem("applicationID"));
+    
         if (!emailID) {
             navigation.replace("SignUp");
         } else {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Image, ScrollView, Text, ToastAndroid } from 'react-native';
+import { View, TextInput, StyleSheet, Image, ScrollView, Text, ToastAndroid, TouchableOpacity } from 'react-native';
 import { SimpleLineIcons, Ionicons } from '@expo/vector-icons';
 import { Button } from 'react-native-elements';
 import NetInfo from '@react-native-community/netinfo';
@@ -123,9 +123,6 @@ export default function Signup({ navigation }) {
         try {
             await SecureStore.setItemAsync('deviceID', '14844490-da5d-4c67-9f4d-3dd4b0cb2294');
             await AsyncStorage.setItem('emailID', 'demo@ifm.com');
-            await AsyncStorage.setItem('mobileNo', '9876543210');
-            await AsyncStorage.setItem('name', 'demo')
-            await AsyncStorage.setItem('designation', 'demo')
             navigation.navigate('Login');
         } catch (error) {
             console.error('Error storing data or navigating:', error);
@@ -276,6 +273,11 @@ export default function Signup({ navigation }) {
                       buttonStyle={styles.button1}
                       disabled={isLoading}
                     />
+                    <View style={styles.navigationLinkContainer}>
+                        <TouchableOpacity onPress={navigateToLogin}>
+                            <Text style={styles.navigationLink}>Login to Demo User</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             )}
             <CustomAlert
@@ -386,7 +388,7 @@ const styles = StyleSheet.create({
         color: '#FF6E00',
     },
     navigationLink: {
-        color: '#FF6E00',
+        color: 'dodgerblue',
         fontWeight: 'bold',
     },
 });

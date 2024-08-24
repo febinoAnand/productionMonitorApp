@@ -82,6 +82,27 @@ export default function Settings({ navigation }) {
         }
     };
 
+    const handleResetUser = async () => {
+        try {
+            const username = await AsyncStorage.getItem('username');
+    
+            if (username === 'demo@ifm.com') {
+                navigation.replace("SignUp");
+                return;
+            }
+    
+            await AsyncStorage.removeItem('emailID');
+            await AsyncStorage.removeItem('name');
+            await AsyncStorage.removeItem('mobileNo');
+            await AsyncStorage.removeItem('designation');
+            await SecureStore.setItemAsync('authState', '0');
+    
+            navigation.replace("SignUp");
+        } catch (error) {
+            console.error('Reset User error:', error);
+        }
+    };
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.box}>
@@ -149,6 +170,13 @@ export default function Settings({ navigation }) {
                     title="Logout"
                     onPress={handleLogout}
                     buttonStyle={styles.logoutButton}
+                />
+            </View>
+            <View style={styles.logoutButtonContainer}>
+                <Button
+                    title="Reset User"
+                    buttonStyle={styles.logoutButton}
+                    onPress={handleResetUser}
                 />
             </View>
             <CustomAlert
