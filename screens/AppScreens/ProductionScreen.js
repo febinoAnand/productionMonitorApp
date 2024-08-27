@@ -141,18 +141,17 @@ const ProductionScreen = () => {
               <View key={index} style={styles.groupContainer}>
                 <Text style={styles.groupHeader}>{group.group_name}</Text>
                 <View style={styles.tableContainer}>
-                  <ScrollView horizontal>
                     <View style={styles.table}>
                       <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>Work Center</Text>
                         </View>
                         {shiftHeaders.map((shiftHeader, idx) => (
-                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
                             <Text style={styles.headerText}>{shiftHeader}</Text>
                           </View>
                         ))}
-                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
                           <Text style={styles.headerText}>Total</Text>
                         </View>
                       </View>
@@ -167,38 +166,37 @@ const ProductionScreen = () => {
 
                         return (
                           <View key={machineIndex} style={styles.row}>
-                            <View style={[styles.cell, styles.columnValue, { width: 150 }]}>
-                              <Text>{machine.machine_id}</Text>
+                            <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
+                              <Text style={styles.valueText}>{machine.machine_id}</Text>
                             </View>
                             {shiftHeaders.map((shiftHeader, idx) => {
                               const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
                               return (
-                                <View key={idx} style={[styles.cell, styles.columnValue, { width: 150 }]}>
-                                  <Text>{shift ? shift.total_shift_production_count : 0}</Text>
+                                <View key={idx} style={[styles.cell, styles.columnValue, { width: 60 }]}>
+                                  <Text style={styles.valueText}>{shift ? shift.total_shift_production_count : 0}</Text>
                                 </View>
                               );
                             })}
-                            <View style={[styles.cell, styles.columnValue, { width: 150 }]}>
-                              <Text>{rowTotal.count}</Text>
+                            <View style={[styles.cell, styles.columnValue, { width: 75 }]}>
+                              <Text style={styles.valueText}>{rowTotal.count}</Text>
                             </View>
                           </View>
                         );
                       })}
                       <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>Grand Total</Text>
                         </View>
                         {shiftHeaders.map((shiftHeader, idx) => (
-                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
                             <Text style={styles.headerText}>{totalCounts[shiftHeader] || 0}</Text>
                           </View>
                         ))}
-                        <View style={[styles.cell, styles.columnHeader, { width: 150 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
                           <Text style={styles.headerText}>{groupTotal}</Text>
                         </View>
                       </View>
                     </View>
-                  </ScrollView>
                 </View>
               </View>
             );
@@ -311,6 +309,10 @@ const styles = StyleSheet.create({
   headerText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 10
+  },
+  valueText: {
+    fontSize: 10
   },
   messageText: {
     fontSize: 16,

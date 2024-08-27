@@ -248,10 +248,10 @@ const ReportScreen = () => {
                           <Text style={styles.headerText}>Time</Text>
                         </View>
                         <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                          <Text style={styles.headerText}>PC</Text>
+                          <Text style={styles.headerText}>Production Count</Text>
                         </View>
                         <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                          <Text style={styles.headerText}>AC</Text>
+                          <Text style={styles.headerText}>Actual Count</Text>
                         </View>
                       </View>
                       {shift.time_slots.map((slot, index) => (
