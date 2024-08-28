@@ -172,7 +172,7 @@ const ProductionScreen = () => {
                       return (
                         <View key={machineIndex} style={styles.row}>
                           <View style={[styles.cell, cellStyle, { width: 80 }]}>
-                            <Text style={[styles.valueText, textStyle]}>{machine.machine_id}</Text>
+                            <Text style={[styles.valueText, textStyle]}>{machine.machine_name}</Text>
                           </View>
                           {shiftHeaders.map((shiftHeader, idx) => {
                             const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `Shift - ${s.shift_no}`) === shiftHeader) : null;
@@ -347,10 +347,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   grayText: {
-    color: '#4a4a4a',
+    color: 'black',
   },
   blackText: {
-    color: '#4a4a4a',
+    color: 'black',
   },
   grayCell: {
     backgroundColor: '#d9d9d9',
