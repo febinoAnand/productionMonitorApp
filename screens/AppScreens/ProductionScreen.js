@@ -63,7 +63,7 @@ const ProductionScreen = () => {
         const firstMachineShifts = filteredData[0].machines.flatMap(machine => machine.shifts || []);
         const shifts = firstMachineShifts
           .filter(shift => shift.shift_name || shift.shift_no)
-          .map(shift => shift.shift_name || `${shift.shift_no}`);
+          .map(shift => shift.shift_name || `Shift - ${shift.shift_no}`);
         setShiftHeaders([...new Set(shifts)]);
       }
     } catch (error) {
@@ -128,7 +128,7 @@ const ProductionScreen = () => {
             group.machines.forEach(machine => {
               const machineShifts = machine.shifts || [];
               machineShifts.forEach(shift => {
-                const shiftHeader = shift.shift_name || `${shift.shift_no}`;
+                const shiftHeader = shift.shift_name || `Shift - ${shift.shift_no}`;
                 if (shiftHeaders.includes(shiftHeader)) {
                   totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.total_shift_production_count;
                 }
@@ -159,7 +159,7 @@ const ProductionScreen = () => {
                     </View>
                     {group.machines.map((machine, machineIndex) => {
                       const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
-                        const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
+                        const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `Shift - ${s.shift_no}`) === shiftHeader) : null;
                         if (shift) {
                           acc.count += shift.total_shift_production_count;
                         }
@@ -175,7 +175,7 @@ const ProductionScreen = () => {
                             <Text style={[styles.valueText, textStyle]}>{machine.machine_id}</Text>
                           </View>
                           {shiftHeaders.map((shiftHeader, idx) => {
-                            const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
+                            const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `Shift - ${s.shift_no}`) === shiftHeader) : null;
                             return (
                               <View key={idx} style={[styles.cell, cellStyle, { width: 60 }]}>
                                 <Text style={[styles.valueText, textStyle]}>{shift ? shift.total_shift_production_count : 0}</Text>

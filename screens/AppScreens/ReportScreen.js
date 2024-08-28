@@ -188,6 +188,10 @@ const ReportScreen = () => {
     return shift.time_slots.reduce((total, slot) => total + slot.actual, 0);
   };
 
+  const calculateShiftTotalDifference = (shift) => {
+    return shift.time_slots.reduce((total, slot) => total + (slot.count - slot.actual), 0);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -237,6 +241,7 @@ const ReportScreen = () => {
             {searchResults.map((shift, shiftIndex) => {
               const shiftTotalCount = calculateShiftTotalCount(shift);
               const shiftTotalActual = calculateShiftTotalActual(shift);
+              const shiftTotalDifference = calculateShiftTotalDifference(shift);
               return (
                 <View key={shiftIndex} style={styles.groupContainer}>
                   <View style={{ height: 20 }}></View>
@@ -244,38 +249,47 @@ const ReportScreen = () => {
                   <View style={styles.tableContainer}>
                     <View style={styles.table}>
                       <View style={styles.row}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 95 }]}>
                           <Text style={styles.headerText}>Time</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>Production Count</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>Actual Count</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
+                          <Text style={styles.headerText}>Difference</Text>
                         </View>
                       </View>
                       {shift.time_slots.map((slot, index) => (
                         <View key={index} style={styles.row}>
-                          <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
+                          <View style={[styles.cell, styles.columnValue, { width: 95 }]}>
                             <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
                           </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                          <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
                             <Text style={styles.valueText}>{slot.count}</Text>
                           </View>
-                          <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                          <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
                             <Text style={styles.valueText}>{slot.actual}</Text>
+                          </View>
+                          <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
+                            <Text style={styles.valueText}>{slot.count - slot.actual}</Text>
                           </View>
                         </View>
                       ))}
                       <View style={styles.row}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 95 }]}>
                           <Text style={styles.headerText}>Total</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>{shiftTotalCount}</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>{shiftTotalActual}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
+                          <Text style={styles.headerText}>{shiftTotalDifference}</Text>
                         </View>
                       </View>
                     </View>
