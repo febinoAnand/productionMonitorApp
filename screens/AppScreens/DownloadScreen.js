@@ -99,7 +99,7 @@ export default function DownloadScreen() {
             body { font-family: Arial, sans-serif; padding: 20px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: dodgerblue; color: white; }
+            th { background-color: #59adff; color: white; }
             h1 { text-align: center; margin-bottom: 10px; }
             .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
             .info p { margin: 0; }
@@ -174,7 +174,7 @@ export default function DownloadScreen() {
             body { font-family: Arial, sans-serif; padding: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: dodgerblue; color: white; }
+            th { background-color: #59adff; color: white; }
             h1 { text-align: center; margin-bottom: 10px; }
             .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
             .group-row { font-weight: bold; background-color: #f4f4f4; }
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   },
   datePickerButton: {
     flexDirection: 'row',
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   iconButton: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   button: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     borderRadius: 50,
     paddingVertical: 10,
     paddingHorizontal: 20,

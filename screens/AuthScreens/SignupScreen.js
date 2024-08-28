@@ -246,7 +246,7 @@ export default function Signup({ navigation }) {
                     />
                     <View style={{ height: 20 }}></View>
                     <View style={styles.inputContainer}>
-                        <SimpleLineIcons name="user" size={20} color="dodgerblue" style={styles.icon} />
+                        <SimpleLineIcons name="user" size={20} color="#59adff" style={styles.icon} />
                         <TextInput
                             style={styles.textInput}
                             placeholder='Email'
@@ -257,7 +257,7 @@ export default function Signup({ navigation }) {
                     </View>
                     <View style={{ height: 20 }}></View>
                     <View style={styles.inputContainer}>
-                        <Ionicons name="call-sharp" size={20} color="dodgerblue" style={styles.icon} />
+                        <Ionicons name="call-sharp" size={20} color="#59adff" style={styles.icon} />
                         <Text style={styles.text}>+ 91</Text>
                         <TextInput
                             style={styles.textInput}
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderBottomWidth: 1,
-        borderBottomColor: 'dodgerblue',
+        borderBottomColor: '#59adff',
         width: 300,
         marginVertical: 10,
     },
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
         color: '#FF6E00',
     },
     navigationLink: {
-        color: 'dodgerblue',
+        color: '#59adff',
         fontWeight: 'bold',
     },
 });

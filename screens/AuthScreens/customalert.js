@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   alertContainer: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     width: 300,
     height: 180,
     padding: 20,
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    color: 'dodgerblue',
+    color: '#59adff',
     fontWeight: 'bold',
   },
 });

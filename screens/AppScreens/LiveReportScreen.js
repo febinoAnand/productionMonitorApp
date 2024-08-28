@@ -1,20 +1,86 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const LiveReportScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { id } = route.params || {};
   const [machineDetails, setMachineDetails] = useState(null);
-  const [machineData, setMachineData] = useState([]);
-  const [totalProduction, setTotalProduction] = useState({ total_production_count: 'N/A', total_target_production: 'N/A' });
-  const [currentTime, setCurrentTime] = useState(new Date());
   const intervalRef = useRef(null);
   const isMounted = useRef(true);
+
+  const hardCodedShifts = [
+    {
+      shift_name: 'Shift 1',
+      shift_number: 1,
+      time_slots: [
+        { start_time: '06:30 AM', end_time: '07:30 AM', count: 0, actual: 0 },
+        { start_time: '07:30 AM', end_time: '08:30 AM', count: 0, actual: 0 },
+        { start_time: '08:30 AM', end_time: '09:30 AM', count: 0, actual: 0 },
+        { start_time: '09:30 AM', end_time: '10:30 AM', count: 0, actual: 0 },
+        { start_time: '10:30 AM', end_time: '11:30 AM', count: 0, actual: 0 },
+        { start_time: '11:30 AM', end_time: '12:30 PM', count: 0, actual: 0 },
+        { start_time: '12:30 PM', end_time: '01:30 PM', count: 0, actual: 0 },
+        { start_time: '01:30 PM', end_time: '02:30 PM', count: 0, actual: 0 },
+      ],
+      groups: [
+        {
+          machines: [
+            { machine_name: 'Machine A' },
+            { machine_name: 'Machine B' },
+          ],
+        },
+      ],
+    },
+    {
+      shift_name: 'Shift 2',
+      shift_number: 2,
+      time_slots: [
+        { start_time: '02:30 PM', end_time: '03:30 PM', count: 0, actual: 0 },
+        { start_time: '03:30 PM', end_time: '04:30 PM', count: 0, actual: 0 },
+        { start_time: '04:30 PM', end_time: '05:30 PM', count: 0, actual: 0 },
+        { start_time: '05:30 PM', end_time: '06:30 PM', count: 0, actual: 0 },
+        { start_time: '06:30 PM', end_time: '07:30 PM', count: 0, actual: 0 },
+        { start_time: '07:30 PM', end_time: '08:30 PM', count: 0, actual: 0 },
+        { start_time: '08:30 PM', end_time: '09:30 PM', count: 0, actual: 0 },
+        { start_time: '09:30 PM', end_time: '10:30 PM', count: 0, actual: 0 },
+      ],
+      groups: [
+        {
+          machines: [
+            { machine_name: 'Machine A' },
+            { machine_name: 'Machine C' },
+          ],
+        },
+      ],
+    },
+    {
+      shift_name: 'Shift 3',
+      shift_number: 3,
+      time_slots: [
+        { start_time: '10:30 PM', end_time: '11:30 PM', count: 0, actual: 0 },
+        { start_time: '11:30 PM', end_time: '12:30 AM', count: 0, actual: 0 },
+        { start_time: '12:30 AM', end_time: '01:30 AM', count: 0, actual: 0 },
+        { start_time: '01:30 AM', end_time: '02:30 AM', count: 0, actual: 0 },
+        { start_time: '02:30 AM', end_time: '03:30 AM', count: 0, actual: 0 },
+        { start_time: '03:30 AM', end_time: '04:30 AM', count: 0, actual: 0 },
+        { start_time: '04:30 AM', end_time: '05:30 AM', count: 0, actual: 0 },
+        { start_time: '05:30 AM', end_time: '06:30 AM', count: 0, actual: 0 },
+      ],
+      groups: [
+        {
+          machines: [
+            { machine_name: 'Machine A' },
+            { machine_name: 'Machine C' },
+          ],
+        },
+      ],
+    },
+  ];
 
   useEffect(() => {
     isMounted.current = true;
@@ -33,14 +99,6 @@ const LiveReportScreen = () => {
     }, [navigation])
   );
 
-  useEffect(() => {
-    const timeInterval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timeInterval);
-  }, []);
-
   const fetchData = async () => {
     if (!id) {
       console.warn('Machine ID is missing or undefined');
@@ -54,8 +112,6 @@ const LiveReportScreen = () => {
 
       if (selectedMachineDetails && isMounted.current) {
         setMachineDetails(selectedMachineDetails);
-        setMachineData(selectedMachineDetails.machine_data || []);
-        setTotalProduction(data.total_production || { total_production_count: '0', total_target_production: '0' });
       } else {
         console.warn('No details found for the selected machine.');
       }
@@ -96,191 +152,91 @@ const LiveReportScreen = () => {
     };
   }, [stopFetchingData]);
 
-  const safeMachineData = Array.isArray(machineData) ? machineData : [];
-
-  const getCurrentDate = () => {
-    return currentTime.toLocaleDateString();
-  };
-
-  const getCurrentTime = () => {
-    return currentTime.toLocaleTimeString();
-  };
-
-  const data = [
-    { label: 'Machine 1', value: 120 },
-    { label: 'Machine 2', value: 50 },
-    { label: 'Machine 3', value: 90 },
-    { label: 'Machine 4', value: 60 },
-  ];
-
-  const barHeight = 30;
-  const chartHeight = data.length * (barHeight + 10);
-  const chartWidth = 300;
-  const maxValue = Math.max(...data.map(d => d.value));
-
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>MACHINE DETAILS</Text>
-        </View>
         <View style={styles.tableContainer}>
           {machineDetails ? (
-            Object.entries({
-              'Machine Name': machineDetails.machine_name,
-              'Machine ID': machineDetails.machine_id,
-              'Line': machineDetails.line,
-              'Manufacture': machineDetails.manufacture,
-              'Year': machineDetails.year,
-              'Production Per Hour': machineDetails.production_per_hour,
-            }).map(([key, value]) => (
-              <View style={styles.row1} key={key}>
-                <View style={[styles.cell1, styles.columnHeader1]}>
-                  <Text>{key}</Text>
-                </View>
-                <View style={[styles.cell1, styles.columnValue1]}>
-                  <Text>{value || '0'}</Text>
+            <>
+              <View style={[styles.row1, styles.centeredRow]}>
+                <View style={[styles.cell1, styles.centeredCell]}>
+                  <Ionicons name="hardware-chip-sharp" size={35} color="#59adff" />
+                  <Text style={styles.boldText}>{machineDetails.machine_id}</Text>
                 </View>
               </View>
-            ))
+              {Object.entries({
+                'Production Count': '100',
+                'Shift Name': 'Shift 1',
+                'Shift Time': '08:00',
+                'Date': '2024-08-28'
+              }).map(([key, value]) => (
+                <View style={styles.row1} key={key}>
+                  <View style={[styles.cell1, styles.columnHeader1]}>
+                    <Text style={styles.headerText2}>{key}</Text>
+                  </View>
+                  <View style={[styles.cell1, styles.columnValue1]}>
+                    <Text style={styles.valueText}>{value || '0'}</Text>
+                  </View>
+                </View>
+              ))}
+            </>
           ) : (
             <Text>No details available.</Text>
           )}
         </View>
-
-        <View style={styles.header}>
-          <Text style={styles.headerText}>PRODUCTION DATA</Text>
+        <View style={styles.whiteContainer}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText1}>Shift Wise Report</Text>
         </View>
-        <View style={styles.tableContainer}>
-              <View>
-                <View style={styles.row1}>
-                  <View style={[styles.cell1, styles.columnHeader1]}>
-                    <Text>Date</Text>
+          {hardCodedShifts.map((shift, shiftIndex) => (
+            <View key={shiftIndex} style={styles.groupContainer}>
+              <Text style={styles.groupHeader}>{shift.shift_name}</Text>
+              <View style={styles.tableContainer1}>
+                <View style={styles.table}>
+                  <View style={styles.row}>
+                    <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                      <Text style={styles.headerText}>Time</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                      <Text style={styles.headerText}>Production Count</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                      <Text style={styles.headerText}>Actual Count</Text>
+                    </View>
                   </View>
-                  <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{getCurrentDate()}</Text>
-                  </View>
-                </View>
-                <View style={styles.row1}>
-                  <View style={[styles.cell1, styles.columnHeader1]}>
-                    <Text>Time</Text>
-                  </View>
-                  <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{getCurrentTime()}</Text>
-                  </View>
-                </View>
-                <View style={styles.row1}>
-                  <View style={[styles.cell1, styles.columnHeader1]}>
-                    <Text>Today's Count</Text>
-                  </View>
-                  <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{totalProduction.total_production_count || '0'}</Text>
-                  </View>
-                </View>
-                <View style={styles.row1}>
-                  <View style={[styles.cell1, styles.columnHeader1]}>
-                    <Text>Target Reading</Text>
-                  </View>
-                  <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text>{totalProduction.total_target_production || '0'}</Text>
+                  {shift.time_slots.map((slot, index) => (
+                    <View key={index} style={styles.row}>
+                      <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
+                        <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                        <Text style={styles.valueText}>{slot.count}</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                        <Text style={styles.valueText}>{slot.actual}</Text>
+                      </View>
+                    </View>
+                  ))}
+                  <View style={styles.row}>
+                    <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                      <Text style={styles.headerText}>Total</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                      <Text style={styles.headerText}>0</Text>
+                    </View>
+                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                      <Text style={styles.headerText}>0</Text>
+                    </View>
                   </View>
                 </View>
               </View>
-              </View>
-
-        <View style={styles.additionalHeader}>
-          <Text style={styles.additionalHeaderText}>PRODUCTION CHART</Text>
-        </View>
-        
-        <View style={styles.tableContainer1}>
-          <View style={styles.chartContainer}>
-            <Svg height={chartHeight} width={chartWidth}>
-              {data.map((item, index) => {
-                const barWidth = (item.value / maxValue) * (chartWidth - 100);
-                return (
-                  <React.Fragment key={index}>
-                    <Rect
-                      x="0"
-                      y={index * (barHeight + 10)}
-                      width={barWidth}
-                      height={barHeight}
-                      fill="dodgerblue"
-                    />
-                    <SvgText
-                      x={barWidth + 5}
-                      y={index * (barHeight + 10) + barHeight / 2}
-                      alignmentBaseline="middle"
-                      fontSize="12"
-                      fill="black"
-                    >
-                      {item.label}
-                    </SvgText>
-                    <SvgText
-                      x="10"
-                      y={index * (barHeight + 10) + barHeight / 2}
-                      alignmentBaseline="middle"
-                      fontSize="10"
-                      fill="white"
-                    >
-                      {item.value}
-                    </SvgText>
-                  </React.Fragment>
-                );
-              })}
-            </Svg>
-          </View>
-        </View>
-
-        <View style={styles.additionalHeader}>
-          <Text style={styles.additionalHeaderText}>MACHINE DATA</Text>
-        </View>
-
-        <View style={styles.tableContainer1}>
-          <ScrollView horizontal>
-            <View>
-              <View style={styles.row}>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 120 }]}>
-                  <Text style={{ color: '#fff' }}>Si.No</Text>
-                </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
-                  <Text style={{ color: '#fff' }}>Date</Text>
-                </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
-                  <Text style={{ color: '#fff' }}>Time</Text>
-                </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
-                  <Text style={{ color: '#fff' }}>Machine ID</Text>
-                </View>
-                <View style={[styles.cell, styles.columnHeader, { backgroundColor: 'dodgerblue', width: 160 }]}>
-                  <Text style={{ color: '#fff' }}>Data</Text>
-                </View>
-              </View>
-              {safeMachineData.length > 0 ? (
-                safeMachineData.map((item, index) => (
-                  <View style={styles.row} key={index}>
-                    <View style={[styles.cell, styles.columnValue, { width: 120 }]}>
-                      <Text>{index + 1}</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
-                      <Text>{item.date || 'N/A'}</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
-                      <Text>{item.time || 'N/A'}</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
-                      <Text>{item.machine_id || 'N/A'}</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnValue, { width: 160 }]}>
-                      <Text>{JSON.stringify(item.data) || 'N/A'}</Text>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <Text>No machine data available.</Text>
+              {shiftIndex < hardCodedShifts.length - 1 && (
+                <View style={styles.dividerLine} />
               )}
             </View>
-          </ScrollView>
+          ))}
         </View>
+        <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
   );
@@ -298,38 +254,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
-  header: {
-    width: '100%',
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
   tableContainer: {
-    width: '70%',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginTop: 20,
-    backgroundColor: '#fff',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5.84,
-    elevation: 8,
-  },
-  tableContainer1: {
     width: '90%',
     justifyContent: 'flex-start',
     alignItems: 'stretch',
@@ -337,7 +262,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-
+    marginTop: 20,
     backgroundColor: '#fff',
     shadowOffset: {
       width: 0,
@@ -347,61 +272,123 @@ const styles = StyleSheet.create({
     shadowRadius: 5.84,
     elevation: 8,
   },
+  headerContainer: {
+    marginTop: 20,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  headerText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#59adff',
+  },
+  headerText1: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  headerText2: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  dividerLine: {
+    height: 2,
+    width: '100%',
+    backgroundColor: '#59adff',
+    marginVertical: 20,
+  },
+  whiteContainer: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
+  },
+  groupContainer: {
+    width: '100%',
+  },
+  groupHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 10,
+  },
+  tableContainer1: {
+    marginTop: 10,
+  },
+  table: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
   row: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
   cell: {
-    padding: 10,
-    borderRightWidth: 1,
-    borderRightColor: '#ddd',
-  },
-  columnHeader: {
-    backgroundColor: '#f4f4f4',
-  },
-  columnValue: {
-    backgroundColor: '#fff',
-  },
-  additionalHeader: {
-    width: '100%',
-    height: 60,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    marginTop: 20,
+    padding: 5,
+    borderRightWidth: 1,
+    borderColor: 'lightgray',
   },
-  additionalHeaderText: {
-    fontSize: 18,
+  columnHeader: {
+    backgroundColor: 'white',
+  },
+  columnValue: {
+    backgroundColor: 'white',
+  },
+  valueText: {
+    fontSize: 10,
+    color: '#333',
+  },
+  centeredRow: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centeredCell: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cell1: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'gray',
+  },
+  boldText: {
     fontWeight: 'bold',
-    color: 'dodgerblue',
+    fontSize: 20,
+    color: '#59adff',
   },
   row1: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  cell1: {
-    flex: 1,
+    borderBottomColor: '#ddd',
     paddingVertical: 10,
-    paddingHorizontal: 15,
   },
   columnHeader1: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    borderRightWidth: 1,
-    borderRightColor: '#ccc',
+    backgroundColor: 'white',
   },
   columnValue1: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  chartContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-    alignItems: 'center',
+    backgroundColor: 'white',
   },
 });
 

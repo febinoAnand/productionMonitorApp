@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   iconButton: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   datePickerButton: {
     flexDirection: 'row',
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'dodgerblue',
+    color: '#59adff',
     padding: 10,
     borderRadius: 5,
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     borderRightColor: '#ccc',
   },
   columnHeader: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
   },
   columnValue: {
     backgroundColor: '#fff',

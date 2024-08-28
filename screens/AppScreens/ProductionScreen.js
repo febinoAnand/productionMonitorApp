@@ -105,7 +105,7 @@ const ProductionScreen = () => {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
             <Text style={styles.datePickerText}>{selectedDate.toISOString().split('T')[0]}</Text>
-            <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
+            <Icon name="calendar" size={20} color="black" style={styles.calendarIcon} />
           </TouchableOpacity>
         </View>
         {showDatePicker && (
@@ -139,64 +139,69 @@ const ProductionScreen = () => {
 
             return (
               <View key={index} style={styles.groupContainer}>
-                <Text style={styles.groupHeader}>{group.group_name}</Text>
                 <View style={styles.tableContainer}>
-                    <View style={styles.table}>
-                      <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>Work Center</Text>
-                        </View>
-                        {shiftHeaders.map((shiftHeader, idx) => (
-                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
-                            <Text style={styles.headerText}>{shiftHeader}</Text>
-                          </View>
-                        ))}
-                        <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
-                          <Text style={styles.headerText}>Total</Text>
-                        </View>
+                  <View style={styles.table}>
+                    <View style={styles.tableHeader}>
+                      <Text style={styles.tableTitle}>{group.group_name}</Text>
+                    </View>
+                    <View style={[styles.row, styles.headerRow]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
+                        <Text style={styles.headerText}>Work Center</Text>
                       </View>
-                      {group.machines.map((machine, machineIndex) => {
-                        const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
-                          const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
-                          if (shift) {
-                            acc.count += shift.total_shift_production_count;
-                          }
-                          return acc;
-                        }, { count: 0 });
-
-                        return (
-                          <View key={machineIndex} style={styles.row}>
-                            <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
-                              <Text style={styles.valueText}>{machine.machine_id}</Text>
-                            </View>
-                            {shiftHeaders.map((shiftHeader, idx) => {
-                              const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
-                              return (
-                                <View key={idx} style={[styles.cell, styles.columnValue, { width: 60 }]}>
-                                  <Text style={styles.valueText}>{shift ? shift.total_shift_production_count : 0}</Text>
-                                </View>
-                              );
-                            })}
-                            <View style={[styles.cell, styles.columnValue, { width: 75 }]}>
-                              <Text style={styles.valueText}>{rowTotal.count}</Text>
-                            </View>
-                          </View>
-                        );
-                      })}
-                      <View style={[styles.row, styles.headerRow]}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>Grand Total</Text>
+                      {shiftHeaders.map((shiftHeader, idx) => (
+                        <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
+                          <Text style={styles.headerText}>{shiftHeader}</Text>
                         </View>
-                        {shiftHeaders.map((shiftHeader, idx) => (
-                          <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
-                            <Text style={styles.headerText}>{totalCounts[shiftHeader] || 0}</Text>
-                          </View>
-                        ))}
-                        <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
-                          <Text style={styles.headerText}>{groupTotal}</Text>
-                        </View>
+                      ))}
+                      <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
+                        <Text style={styles.headerText}>Total</Text>
                       </View>
                     </View>
+                    {group.machines.map((machine, machineIndex) => {
+                      const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
+                        const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
+                        if (shift) {
+                          acc.count += shift.total_shift_production_count;
+                        }
+                        return acc;
+                      }, { count: 0 });
+            
+                      const cellStyle = machineIndex % 2 === 0 ? styles.grayCell : styles.blackCell;
+                      const textStyle = machineIndex % 2 === 0 ? styles.grayText : styles.blackText;
+            
+                      return (
+                        <View key={machineIndex} style={styles.row}>
+                          <View style={[styles.cell, cellStyle, { width: 80 }]}>
+                            <Text style={[styles.valueText, textStyle]}>{machine.machine_id}</Text>
+                          </View>
+                          {shiftHeaders.map((shiftHeader, idx) => {
+                            const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `${s.shift_no}`) === shiftHeader) : null;
+                            return (
+                              <View key={idx} style={[styles.cell, cellStyle, { width: 60 }]}>
+                                <Text style={[styles.valueText, textStyle]}>{shift ? shift.total_shift_production_count : 0}</Text>
+                              </View>
+                            );
+                          })}
+                          <View style={[styles.cell, cellStyle, { width: 75 }]}>
+                            <Text style={[styles.valueText, textStyle]}>{rowTotal.count}</Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                    <View style={[styles.row, styles.totalRow]}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
+                        <Text style={styles.headerText}>Total</Text>
+                      </View>
+                      {shiftHeaders.map((shiftHeader, idx) => (
+                        <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
+                          <Text style={styles.headerText}>{totalCounts[shiftHeader] || 0}</Text>
+                        </View>
+                      ))}
+                      <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
+                        <Text style={styles.headerText}>{groupTotal}</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
               </View>
             );
@@ -226,16 +231,25 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   datePickerButton: {
+    width:"100%",
     flexDirection: 'row',
-    backgroundColor: 'dodgerblue',
+    backgroundColor: 'white',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
     marginLeft: 10,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
   },
   datePickerText: {
-    color: 'white',
+    color: 'black',
     fontWeight: 'bold',
     fontSize: 14,
     marginRight: 10,
@@ -271,7 +285,6 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     marginTop: 10,
-    marginBottom: 20,
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: {
@@ -282,6 +295,15 @@ const styles = StyleSheet.create({
     shadowRadius: 5.84,
     elevation: 8,
   },
+  tableHeader: {
+    backgroundColor: 'white',
+    padding: 20,
+  },
+  tableTitle: {
+    fontSize: 18,
+    color: 'black',
+    textAlign: 'center',
+  },
   table: {
     minWidth: '100%',
   },
@@ -290,7 +312,7 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     borderBottomWidth: 2,
-    borderBottomColor: 'dodgerblue',
+    borderBottomColor: 'black',
   },
   cell: {
     paddingVertical: 10,
@@ -298,27 +320,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#ccc',
+    borderRightColor: 'white',
   },
   columnHeader: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: 'white',
   },
   columnValue: {
-    backgroundColor: '#fff',
+    backgroundColor: 'white',
+  },
+  totalRow: {
+    borderTopWidth: 2,
+    borderTopColor: 'black',
   },
   headerText: {
-    color: '#fff',
+    color: 'black',
     fontWeight: 'bold',
     fontSize: 10
   },
   valueText: {
-    fontSize: 10
+    fontSize: 10,
   },
   messageText: {
     fontSize: 16,
     color: 'grey',
     textAlign: 'center',
     marginTop: 20,
+  },
+  grayText: {
+    color: '#4a4a4a',
+  },
+  blackText: {
+    color: '#4a4a4a',
+  },
+  grayCell: {
+    backgroundColor: '#d9d9d9',
+  },
+  blackCell: {
+    backgroundColor: 'white',
   },
 });
 

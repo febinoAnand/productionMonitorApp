@@ -113,7 +113,7 @@ export default function Settings({ navigation }) {
                     onChangeText={setName}
                     editable={false}
                     selectTextOnFocus={false}
-                    leftIcon={<Icon name="user" type="font-awesome" size={24} color="dodgerblue" />}
+                    leftIcon={<Icon name="user" type="font-awesome" size={24} color="#59adff" />}
                     inputStyle={styles.inputStyle}
                 />
                 <Input
@@ -122,7 +122,7 @@ export default function Settings({ navigation }) {
                     onChangeText={setEmail}
                     editable={false}
                     selectTextOnFocus={false}
-                    leftIcon={<Icon name="envelope" type="font-awesome" size={24} color="dodgerblue" />}
+                    leftIcon={<Icon name="envelope" type="font-awesome" size={24} color="#59adff" />}
                     inputStyle={styles.inputStyle}
                 />
                 <View style={styles.rowContainer}>
@@ -132,7 +132,7 @@ export default function Settings({ navigation }) {
                         onChangeText={setDesignation}
                         editable={false}
                         selectTextOnFocus={false}
-                        leftIcon={<Icon name="briefcase" type="font-awesome" size={24} color="dodgerblue" />}
+                        leftIcon={<Icon name="briefcase" type="font-awesome" size={24} color="#59adff" />}
                         inputStyle={styles.inputStyle}
                         containerStyle={styles.inputContainer}
                     />
@@ -142,7 +142,7 @@ export default function Settings({ navigation }) {
                         onChangeText={setMobileNo}
                         editable={false}
                         selectTextOnFocus={false}
-                        leftIcon={<Icon name="phone" type="font-awesome" size={24} color="dodgerblue" />}
+                        leftIcon={<Icon name="phone" type="font-awesome" size={24} color="#59adff" />}
                         inputStyle={styles.inputStyle}
                         containerStyle={styles.inputContainer}
                     />
@@ -154,14 +154,14 @@ export default function Settings({ navigation }) {
                     placeholder="1.0.0"
                     editable={false}
                     selectTextOnFocus={false}
-                    leftIcon={<Icon name="mobile" type="font-awesome" size={24} color="dodgerblue" />}
+                    leftIcon={<Icon name="mobile" type="font-awesome" size={24} color="#59adff" />}
                     inputStyle={styles.inputStyle}
                 />
                 <Input
                     placeholder="30-07-2024  12:24 PM"
                     editable={false}
                     selectTextOnFocus={false}
-                    leftIcon={<Icon name="clock-o" type="font-awesome" size={24} color="dodgerblue" />}
+                    leftIcon={<Icon name="clock-o" type="font-awesome" size={24} color="#59adff" />}
                     inputStyle={styles.inputStyle}
                 />
             </View>
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
         color: 'white',
         paddingVertical: 10,
         borderRadius: 5,
-        backgroundColor: 'dodgerblue',
+        backgroundColor: '#59adff',
     },
     inputStyle: {
         fontSize: 12,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logoutButton: {
-        backgroundColor: 'dodgerblue',
+        backgroundColor: '#59adff',
         borderRadius: 50,
         paddingVertical: 10,
         paddingHorizontal: 20,

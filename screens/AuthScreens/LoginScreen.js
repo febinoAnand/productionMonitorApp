@@ -228,7 +228,7 @@ export default function Login({ navigation }) {
                     <View style={{ height: 20 }}></View>
                     <View style={styles.centerText}>
                         <View style={styles.inputContainer}>
-                            <SimpleLineIcons name="user" size={20} color="dodgerblue" style={styles.icon} />
+                            <SimpleLineIcons name="user" size={20} color="#59adff" style={styles.icon} />
                             <TextInput
                                 style={styles.textInput}
                                 placeholder='User Name'
@@ -241,7 +241,7 @@ export default function Login({ navigation }) {
                         </View>
                         <View style={{ height: 20 }}></View>
                         <View style={styles.inputContainer}>
-                            <Feather name="lock" size={24} color="dodgerblue" style={styles.icon} />
+                            <Feather name="lock" size={24} color="#59adff" style={styles.icon} />
                             <TextInput
                                 style={styles.textInput}
                                 placeholder='Password'
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderBottomWidth: 1,
-        borderBottomColor: 'dodgerblue',
+        borderBottomColor: '#59adff',
         width: 300,
         marginVertical: 10,
     },

@@ -254,16 +254,16 @@ export default function OTPpage({ navigation, route }) {
             )}
             <View style={{ height: 20 }}></View>
             <View style={styles.buttonContainer}>
-              <Button title="Resend" disabled={!resendFocus} color="dodgerblue" onPress={showAlertForResend} />
+              <Button title="Resend" disabled={!resendFocus} color="#59adff" onPress={showAlertForResend} />
             </View>
             <View style={styles.buttonContainer}>
               
-              <Button title="Back" color="dodgerblue" onPress={()=>{
+              <Button title="Back" color="#59adff" onPress={()=>{
                 navigation.navigate("SignUp")}
                  }/>
             </View>
             <View style={styles.buttonContainer}>
-            <Button title="Verify" color="dodgerblue" onPress={compareOTPWithServer} />
+            <Button title="Verify" color="#59adff" onPress={compareOTPWithServer} />
           </View>
           </View>
         </>
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginHorizontal: 5,
-    borderColor: 'dodgerblue',
+    borderColor: '#59adff',
     backgroundColor: 'transparent',
   },
   circle: {
