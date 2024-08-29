@@ -202,7 +202,7 @@ const ReportScreen = () => {
             onPress={toggleDropdown}
           >
             <Text style={styles.datePickerText}>{selectedOption ? selectedOption.label : 'Select Machine'}</Text>
-            <Icon name="caret-down" size={20} color="white" style={styles.calendarIcon} />
+            <Icon name="caret-down" size={16} color="white" style={styles.calendarIcon} />
           </TouchableOpacity>
           {showDropdown && (
             <View style={styles.dropdownContainer}>
@@ -219,10 +219,10 @@ const ReportScreen = () => {
           )}
           <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
             <Text style={styles.datePickerText}>{selectedDate.toDateString()}</Text>
-            <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
+            <Icon name="calendar" size={16} color="white" style={styles.calendarIcon} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={handleSearch}>
-            <Icon name="search" size={20} color="white" />
+            <Icon name="search" size={16} color="white" />
           </TouchableOpacity>
         </View>
         {showDatePicker && (

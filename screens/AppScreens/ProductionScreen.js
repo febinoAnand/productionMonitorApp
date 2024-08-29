@@ -182,7 +182,7 @@ const ProductionScreen = () => {
                               </View>
                             );
                           })}
-                          <View style={[styles.cell, cellStyle, { width: 75 }]}>
+                          <View style={[styles.cell, cellStyle, { width: 79 }]}>
                             <Text style={[styles.valueText, textStyle]}>{rowTotal.count}</Text>
                           </View>
                         </View>
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   grayCell: {
-    backgroundColor: '#d9d9d9',
+    backgroundColor: '#59adff',
   },
   blackCell: {
     backgroundColor: 'white',
