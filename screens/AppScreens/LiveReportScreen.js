@@ -13,75 +13,6 @@ const LiveReportScreen = () => {
   const intervalRef = useRef(null);
   const isMounted = useRef(true);
 
-  const hardCodedShifts = [
-    {
-      shift_name: 'Shift 1',
-      shift_number: 1,
-      time_slots: [
-        { start_time: '06:30 AM', end_time: '07:30 AM', count: 0, actual: 0 },
-        { start_time: '07:30 AM', end_time: '08:30 AM', count: 0, actual: 0 },
-        { start_time: '08:30 AM', end_time: '09:30 AM', count: 0, actual: 0 },
-        { start_time: '09:30 AM', end_time: '10:30 AM', count: 0, actual: 0 },
-        { start_time: '10:30 AM', end_time: '11:30 AM', count: 0, actual: 0 },
-        { start_time: '11:30 AM', end_time: '12:30 PM', count: 0, actual: 0 },
-        { start_time: '12:30 PM', end_time: '01:30 PM', count: 0, actual: 0 },
-        { start_time: '01:30 PM', end_time: '02:30 PM', count: 0, actual: 0 },
-      ],
-      groups: [
-        {
-          machines: [
-            { machine_name: 'Machine A' },
-            { machine_name: 'Machine B' },
-          ],
-        },
-      ],
-    },
-    {
-      shift_name: 'Shift 2',
-      shift_number: 2,
-      time_slots: [
-        { start_time: '02:30 PM', end_time: '03:30 PM', count: 0, actual: 0 },
-        { start_time: '03:30 PM', end_time: '04:30 PM', count: 0, actual: 0 },
-        { start_time: '04:30 PM', end_time: '05:30 PM', count: 0, actual: 0 },
-        { start_time: '05:30 PM', end_time: '06:30 PM', count: 0, actual: 0 },
-        { start_time: '06:30 PM', end_time: '07:30 PM', count: 0, actual: 0 },
-        { start_time: '07:30 PM', end_time: '08:30 PM', count: 0, actual: 0 },
-        { start_time: '08:30 PM', end_time: '09:30 PM', count: 0, actual: 0 },
-        { start_time: '09:30 PM', end_time: '10:30 PM', count: 0, actual: 0 },
-      ],
-      groups: [
-        {
-          machines: [
-            { machine_name: 'Machine A' },
-            { machine_name: 'Machine C' },
-          ],
-        },
-      ],
-    },
-    {
-      shift_name: 'Shift 3',
-      shift_number: 3,
-      time_slots: [
-        { start_time: '10:30 PM', end_time: '11:30 PM', count: 0, actual: 0 },
-        { start_time: '11:30 PM', end_time: '12:30 AM', count: 0, actual: 0 },
-        { start_time: '12:30 AM', end_time: '01:30 AM', count: 0, actual: 0 },
-        { start_time: '01:30 AM', end_time: '02:30 AM', count: 0, actual: 0 },
-        { start_time: '02:30 AM', end_time: '03:30 AM', count: 0, actual: 0 },
-        { start_time: '03:30 AM', end_time: '04:30 AM', count: 0, actual: 0 },
-        { start_time: '04:30 AM', end_time: '05:30 AM', count: 0, actual: 0 },
-        { start_time: '05:30 AM', end_time: '06:30 AM', count: 0, actual: 0 },
-      ],
-      groups: [
-        {
-          machines: [
-            { machine_name: 'Machine A' },
-            { machine_name: 'Machine C' },
-          ],
-        },
-      ],
-    },
-  ];
-
   useEffect(() => {
     isMounted.current = true;
     return () => {
@@ -94,7 +25,6 @@ const LiveReportScreen = () => {
       const unsubscribe = navigation.addListener('blur', () => {
         navigation.replace('Dashboard');
       });
-
       return unsubscribe;
     }, [navigation])
   );
@@ -106,18 +36,31 @@ const LiveReportScreen = () => {
     }
 
     try {
-      const response = await axios.get(`${BaseURL}data/individual/${id}/`);
+      const response = await axios.get(`${BaseURL}data/individual-report/`);
       const data = response.data;
-      const selectedMachineDetails = data.machine_details;
+      console.log('API Response:', data);
 
-      if (selectedMachineDetails && isMounted.current) {
-        setMachineDetails(selectedMachineDetails);
+      if (data && data.machines && Array.isArray(data.machines)) {
+        const machine = data.machines.find(machine => machine.machine_id === id);
+        if (machine) {
+          setMachineDetails(machine);
+        } else {
+          console.warn('Machine not found in the API response.');
+        }
       } else {
-        console.warn('No details found for the selected machine.');
+        console.warn('Invalid API response format.');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const startFetchingData = useCallback(() => {
@@ -161,36 +104,71 @@ const LiveReportScreen = () => {
               <View style={[styles.row1, styles.centeredRow]}>
                 <View style={[styles.cell1, styles.centeredCell]}>
                   <Ionicons name="hardware-chip-sharp" size={35} color="#59adff" />
-                  <Text style={styles.boldText}>{machineDetails.machine_id}</Text>
+                  <Text style={styles.boldText}>{machineDetails.machine_name}</Text>
                 </View>
               </View>
-              {Object.entries({
-                'Production Count': '100',
-                'Shift Name': 'Shift 1',
-                'Shift Time': '08:00',
-                'Date': '2024-08-28'
-              }).map(([key, value]) => (
-                <View style={styles.row1} key={key}>
-                  <View style={[styles.cell1, styles.columnHeader1]}>
-                    <Text style={styles.headerText2}>{key}</Text>
-                  </View>
-                  <View style={[styles.cell1, styles.columnValue1]}>
-                    <Text style={styles.valueText}>{value || '0'}</Text>
-                  </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text style={styles.headerText2}>Production Count</Text>
                 </View>
-              ))}
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text style={styles.valueText}>
+                    {machineDetails.shifts_data ? 
+                      Object.values(machineDetails.shifts_data)
+                        .flatMap(shift => Object.values(shift))
+                        .reduce((total, data) => total + data.actual_production, 0) 
+                      : '0'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text style={styles.headerText2}>Shift Name</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text style={styles.valueText}>
+                    {machineDetails.shifts_data ? 
+                      Object.keys(machineDetails.shifts_data)[0] 
+                      : 'N/A'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text style={styles.headerText2}>Shift Time</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text style={styles.valueText}>
+                    {machineDetails.shifts_data ? 
+                      Object.values(machineDetails.shifts_data)
+                        .flatMap(shift => Object.keys(shift))
+                        .join(', ') 
+                      : 'N/A'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text style={styles.headerText2}>Date</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text style={styles.valueText}>{getTodayDate()}</Text>
+                </View>
+              </View>
             </>
           ) : (
             <Text>No details available.</Text>
           )}
         </View>
         <View style={styles.whiteContainer}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerText1}>Shift Wise Report</Text>
-        </View>
-          {hardCodedShifts.map((shift, shiftIndex) => (
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerText1}>Shift Wise Report</Text>
+          </View>
+          {machineDetails && machineDetails.shifts && machineDetails.shifts.map((shift, shiftIndex) => (
             <View key={shiftIndex} style={styles.groupContainer}>
-              <Text style={styles.groupHeader}>{shift.shift_name}</Text>
+              <Text style={styles.groupHeader}>
+                {shift.shift_name || `Shift ${shift.shift_no}`}
+              </Text>
               <View style={styles.tableContainer1}>
                 <View style={styles.table}>
                   <View style={styles.row}>
@@ -201,19 +179,19 @@ const LiveReportScreen = () => {
                       <Text style={styles.headerText}>Production Count</Text>
                     </View>
                     <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>Actual Count</Text>
+                      <Text style={styles.headerText}>Target Count</Text>
                     </View>
                   </View>
-                  {shift.time_slots.map((slot, index) => (
+                  {Object.entries(shift.timing).map(([timeSlot, values], index) => (
                     <View key={index} style={styles.row}>
                       <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
-                        <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
+                        <Text style={styles.valueText}>{timeSlot}</Text>
                       </View>
                       <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
-                        <Text style={styles.valueText}>{slot.count}</Text>
+                        <Text style={styles.valueText}>{values.actual_production}</Text>
                       </View>
                       <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
-                        <Text style={styles.valueText}>{slot.actual}</Text>
+                        <Text style={styles.valueText}>{values.target_production}</Text>
                       </View>
                     </View>
                   ))}
@@ -222,15 +200,19 @@ const LiveReportScreen = () => {
                       <Text style={styles.headerText}>Total</Text>
                     </View>
                     <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>0</Text>
+                      <Text style={styles.headerText}>
+                        {Object.values(shift.timing).reduce((total, val) => total + val.actual_production, 0)}
+                      </Text>
                     </View>
                     <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>0</Text>
+                      <Text style={styles.headerText}>
+                        {Object.values(shift.timing).reduce((total, val) => total + val.target_production, 0)}
+                      </Text>
                     </View>
                   </View>
                 </View>
               </View>
-              {shiftIndex < hardCodedShifts.length - 1 && (
+              {shiftIndex < machineDetails.shifts.length - 1 && (
                 <View style={styles.dividerLine} />
               )}
             </View>

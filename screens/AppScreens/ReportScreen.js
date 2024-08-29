@@ -256,7 +256,7 @@ const ReportScreen = () => {
                           <Text style={styles.headerText}>Production Count</Text>
                         </View>
                         <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>Actual Count</Text>
+                          <Text style={styles.headerText}>Target Count</Text>
                         </View>
                         <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
                           <Text style={styles.headerText}>Difference</Text>

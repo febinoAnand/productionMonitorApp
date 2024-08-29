@@ -107,7 +107,7 @@ export default function DownloadScreen() {
         </head>
         <body>
           <div class="info">
-            <p>${data.machine_id ? `<strong>Machine ID:</strong> ${data.machine_id}` : ''}</p>
+            <p>${data.machine_name ? `<strong>Machine Name:</strong> ${data.machine_name}` : ''}</p>
             <p>${data.date ? `<strong>Date:</strong> ${data.date}` : ''}</p>
           </div>
           <h1>Shift Wise Report</h1>
@@ -209,7 +209,7 @@ export default function DownloadScreen() {
                 return `
                   <tr>
                     ${machine === group.machines[0] ? `<td rowspan="${group.machines.length}" class="group-row">${group.group_name}</td>` : ''}
-                    <td>${machine.machine_id || 'N/A'}</td>
+                    <td>${machine.machine_name || 'N/A'}</td>
                     <td>${productionCounts}</td>
                     <td>${totalProduction}</td>
                     ${machine === group.machines[0] ? `<td rowspan="${group.machines.length}" class="group-row">${groupTotalProduction}</td>` : ''}
