@@ -431,7 +431,8 @@ const styles = StyleSheet.create({
   headerText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 10
+    textAlign: 'center',
+    fontSize: 8
   },
   valueText: {
     fontSize: 10

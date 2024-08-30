@@ -63,7 +63,7 @@ const ProductionScreen = () => {
         const firstMachineShifts = filteredData[0].machines.flatMap(machine => machine.shifts || []);
         const shifts = firstMachineShifts
           .filter(shift => shift.shift_name || shift.shift_no)
-          .map(shift => shift.shift_name || `Shift - ${shift.shift_no}`);
+          .map(shift => shift.shift_name || `Shift-${shift.shift_no}`);
         setShiftHeaders([...new Set(shifts)]);
       }
     } catch (error) {
@@ -128,7 +128,7 @@ const ProductionScreen = () => {
             group.machines.forEach(machine => {
               const machineShifts = machine.shifts || [];
               machineShifts.forEach(shift => {
-                const shiftHeader = shift.shift_name || `Shift - ${shift.shift_no}`;
+                const shiftHeader = shift.shift_name || `Shift-${shift.shift_no}`;
                 if (shiftHeaders.includes(shiftHeader)) {
                   totalCounts[shiftHeader] = (totalCounts[shiftHeader] || 0) + shift.total_shift_production_count;
                 }
@@ -139,7 +139,6 @@ const ProductionScreen = () => {
 
             return (
               <View key={index} style={styles.groupContainer}>
-                <View style={styles.tableContainer}>
                   <View style={styles.table}>
                     <View style={styles.tableHeader}>
                       <Text style={styles.tableTitle}>{group.group_name}</Text>
@@ -159,16 +158,16 @@ const ProductionScreen = () => {
                     </View>
                     {group.machines.map((machine, machineIndex) => {
                       const rowTotal = shiftHeaders.reduce((acc, shiftHeader) => {
-                        const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `Shift - ${s.shift_no}`) === shiftHeader) : null;
+                        const shift = machine.shifts ? machine.shifts.find(s => (s.shift_name || `Shift-${s.shift_no}`) === shiftHeader) : null;
                         if (shift) {
                           acc.count += shift.total_shift_production_count;
                         }
                         return acc;
                       }, { count: 0 });
-            
+
                       const cellStyle = machineIndex % 2 === 0 ? styles.grayCell : styles.blackCell;
                       const textStyle = machineIndex % 2 === 0 ? styles.grayText : styles.blackText;
-            
+
                       return (
                         <View key={machineIndex} style={styles.row}>
                           <View style={[styles.cell, cellStyle, { width: 80 }]}>
@@ -182,27 +181,26 @@ const ProductionScreen = () => {
                               </View>
                             );
                           })}
-                          <View style={[styles.cell, cellStyle, { width: 79 }]}>
+                          <View style={[styles.cell, cellStyle, { width: 75 }]}>
                             <Text style={[styles.valueText, textStyle]}>{rowTotal.count}</Text>
                           </View>
                         </View>
                       );
                     })}
                     <View style={[styles.row, styles.totalRow]}>
-                      <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                        <Text style={styles.headerText}>Total</Text>
+                      <View style={[styles.cell, { width: 80 }]}>
+                        <Text style={styles.headerText1}>Total</Text>
                       </View>
                       {shiftHeaders.map((shiftHeader, idx) => (
-                        <View key={idx} style={[styles.cell, styles.columnHeader, { width: 60 }]}>
-                          <Text style={styles.headerText}>{totalCounts[shiftHeader] || 0}</Text>
+                        <View key={idx} style={[styles.cell, { width: 60 }]}>
+                          <Text style={styles.headerText1}>{totalCounts[shiftHeader] || 0}</Text>
                         </View>
                       ))}
-                      <View style={[styles.cell, styles.columnHeader, { width: 75 }]}>
-                        <Text style={styles.headerText}>{groupTotal}</Text>
+                      <View style={[styles.cell, { width: 75 }]}>
+                        <Text style={styles.headerText1}>{groupTotal}</Text>
                       </View>
                     </View>
                   </View>
-                </View>
               </View>
             );
           })
@@ -249,43 +247,27 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   datePickerText: {
-    color: 'black',
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 14,
     marginRight: 10,
-  },
-  iconButton: {
-    backgroundColor: 'dodgerblue',
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 5,
-    marginLeft: 10,
   },
   calendarIcon: {
     marginLeft: 'auto',
   },
   groupContainer: {
-    width: '100%',
     marginBottom: 20,
-  },
-  groupHeader: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'dodgerblue',
-    padding: 10,
+    borderWidth: 1,
+    borderColor: 'black',
     borderRadius: 5,
+    overflow: 'hidden',
+    backgroundColor: 'white',
   },
   tableContainer: {
     width: '100%',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    marginTop: 10,
-    backgroundColor: '#fff',
+  },
+  table: {
+    width: '100%',
+    paddingTop: 9,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -297,54 +279,39 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: 'white',
-    padding: 20,
+    padding: 12,
   },
   tableTitle: {
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: 'bold',
     color: 'black',
     textAlign: 'center',
-  },
-  table: {
-    minWidth: '100%',
   },
   row: {
     flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: 'black',
   },
   headerRow: {
-    borderBottomWidth: 2,
-    borderBottomColor: 'black',
+    backgroundColor: 'lightblue',
   },
   cell: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    borderRightWidth: 1,
+    borderColor: 'black',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRightWidth: 1,
-    borderRightColor: 'white',
+    padding: 5,
   },
   columnHeader: {
-    backgroundColor: 'white',
+    backgroundColor: 'dodgerblue',
+    height: 50
   },
-  columnValue: {
-    backgroundColor: 'white',
+  grayCell: {
+    backgroundColor: '#ffffff',
+    height: 30
   },
-  totalRow: {
-    borderTopWidth: 2,
-    borderTopColor: 'black',
-  },
-  headerText: {
-    color: 'black',
-    fontWeight: 'bold',
-    fontSize: 10
-  },
-  valueText: {
-    fontSize: 10,
-  },
-  messageText: {
-    fontSize: 16,
-    color: 'grey',
-    textAlign: 'center',
-    marginTop: 20,
+  blackCell: {
+    backgroundColor: '#ffffff',
   },
   grayText: {
     color: 'black',
@@ -352,10 +319,22 @@ const styles = StyleSheet.create({
   blackText: {
     color: 'black',
   },
-  grayCell: {
-    backgroundColor: '#59adff',
+  headerText: {
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 12,
+    textAlign: 'center',
   },
-  blackCell: {
+  headerText1: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  valueText: {
+    fontSize: 10,
+    textAlign: 'center',
+  },
+  totalRow: {
     backgroundColor: 'white',
   },
 });
