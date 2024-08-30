@@ -279,17 +279,17 @@ const ReportScreen = () => {
                         </View>
                       ))}
                       <View style={styles.row}>
-                        <View style={[styles.cell, styles.columnHeader, { width: 95 }]}>
-                          <Text style={styles.headerText}>Total</Text>
+                        <View style={[styles.cell, styles.columnHeader1, { width: 95 }]}>
+                          <Text style={styles.headerText1}>Total</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>{shiftTotalCount}</Text>
+                        <View style={[styles.cell, styles.columnHeader1, { width: 80 }]}>
+                          <Text style={styles.headerText1}>{shiftTotalCount}</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>{shiftTotalActual}</Text>
+                        <View style={[styles.cell, styles.columnHeader1, { width: 80 }]}>
+                          <Text style={styles.headerText1}>{shiftTotalActual}</Text>
                         </View>
-                        <View style={[styles.cell, styles.columnHeader, { width: 80 }]}>
-                          <Text style={styles.headerText}>{shiftTotalDifference}</Text>
+                        <View style={[styles.cell, styles.columnHeader1, { width: 80 }]}>
+                          <Text style={styles.headerText1}>{shiftTotalDifference}</Text>
                         </View>
                       </View>
                     </View>
@@ -409,10 +409,16 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   table: {
-    minWidth: '100%',
+    width: '100%',
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
   },
   cell: {
     paddingVertical: 10,
@@ -420,10 +426,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#ccc',
+    borderRightColor: 'black',
   },
   columnHeader: {
     backgroundColor: '#59adff',
+  },
+  columnHeader1: {
+    backgroundColor: 'white',
   },
   columnValue: {
     backgroundColor: '#fff',
@@ -432,10 +441,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 8
+    fontSize: 8,
+  },
+  headerText1: {
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 12,
   },
   valueText: {
-    fontSize: 10
+    fontSize: 10,
   },
   messageText: {
     fontSize: 16,
