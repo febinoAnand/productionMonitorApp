@@ -1,34 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-// import * as ScreenOrientation from 'expo-screen-orientation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 
 const DashboardScreen = () => {
-  // const [orientation, setOrientation] = useState(ScreenOrientation.Orientation.UNKNOWN);
   const [groups, setGroups] = useState([]);
   const intervalRef = useRef(null);
   const navigation = useNavigation();
-
-  // useEffect(() => {
-  //   const lockOrientation = async () => {
-  //     await ScreenOrientation.lockAsync(ScreenOrientation.Orientation.PORTRAIT_UP);
-  //     setOrientation(ScreenOrientation.Orientation.PORTRAIT_UP);
-  //   };
-
-  //   lockOrientation();
-
-  //   const orientationChangeListener = ({ orientationInfo }) => {
-  //     setOrientation(orientationInfo.orientation);
-  //   };
-
-  //   const subscription = ScreenOrientation.addOrientationChangeListener(orientationChangeListener);
-  //   return () => {
-  //     ScreenOrientation.removeOrientationChangeListener(subscription);
-  //   };
-  // }, []);
 
   const checkToken = async () => {
     try {
@@ -54,33 +34,26 @@ const DashboardScreen = () => {
     }
     try {
       const token = await AsyncStorage.getItem('token');
-      const groupsResponse = await axios.get(`${BaseURL}devices/machinegroup/`, {
+      const response = await axios.get(`${BaseURL}data/dashboard-data/`, {
         headers: { Authorization: `Token ${token}` },
       });
-
-      const productionResponse = await axios.get(`${BaseURL}data/dashboard/`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-
-      const productionData = productionResponse.data;
-
-      const updatedGroups = groupsResponse.data.map(group => {
-        const productionGroup = productionData.find(pGroup => pGroup.group_id === group.group_id);
-
-        return {
+  
+      const responseData = response.data;
+      if (responseData && Array.isArray(responseData.groups)) {
+        const updatedGroups = responseData.groups.map(group => ({
           ...group,
-          machines: group.machines.map(machine => {
-            const productionMachine = productionGroup?.machines.find(pMachine => pMachine.machine_id === machine.machine_id) || {};
-            return {
-              ...machine,
-              production_count: productionMachine.production_count || 0,
-              target_production: productionMachine.target_production || 0,
-            };
-          }),
-        };
-      });
+          machines: group.machines.map(machine => ({
+            ...machine,
+            production_count: machine.production_count || 0,
+            target_production: machine.target_production || 0,
+          })),
+        }));
 
-      setGroups(updatedGroups.reverse());
+        setGroups(updatedGroups.reverse());
+      } else {
+        console.error('Expected an array inside "groups", but received:', responseData.groups);
+        setGroups([]);
+      }
     } catch (error) {
       console.error('Error fetching group data:', error);
       setGroups([]);
@@ -93,7 +66,7 @@ const DashboardScreen = () => {
     intervalRef.current = setInterval(() => {
       console.log('Fetching data...');
       fetchGroupData();
-    }, 3000);
+    }, 20000);
   };
   
   const stopFetchingData = () => {
@@ -139,7 +112,7 @@ const DashboardScreen = () => {
               <View style={styles.squareContainer}>
                 {group.machines.map((machine) => (
                   <TouchableOpacity
-                    key={machine.id}
+                    key={machine.machine_id}
                     style={styles.square}
                     onPress={() => handleSquarePress(machine)}
                   >
@@ -196,15 +169,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   square: {
-    width: '30%',
-    height: 100,
+    width: '32.5%',
+    height: 110,
     backgroundColor: 'ghostwhite',
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 5,
+    margin: 1,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -214,8 +187,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   oval: {
-    width: '50%',
-    height: '50%',
+    width: '55%',
+    height: '55%',
     top: 40,
     backgroundColor: '#59adff',
     borderRadius: 100,
@@ -224,7 +197,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   ovalText: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
     color: 'white',
   },

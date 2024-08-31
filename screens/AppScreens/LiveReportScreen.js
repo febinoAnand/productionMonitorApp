@@ -36,19 +36,18 @@ const LiveReportScreen = () => {
     }
 
     try {
-      const response = await axios.get(`${BaseURL}data/individual-report/`);
+      const todayDate = getTodayDate();
+      const response = await axios.post(`${BaseURL}data/individual-report/`, {
+        date: todayDate,
+        machine_id: id,
+      });
       const data = response.data;
       console.log('API Response:', data);
 
-      if (data && data.machines && Array.isArray(data.machines)) {
-        const machine = data.machines.find(machine => machine.machine_id === id);
-        if (machine) {
-          setMachineDetails(machine);
-        } else {
-          console.warn('Machine not found in the API response.');
-        }
+      if (data && data.machine_id === id) {
+        setMachineDetails(data);
       } else {
-        console.warn('Invalid API response format.');
+        console.warn('Machine not found in the API response.');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -69,7 +68,7 @@ const LiveReportScreen = () => {
     intervalRef.current = setInterval(() => {
       console.log('Fetching data...');
       fetchData();
-    }, 3000);
+    }, 20000);
   }, [id]);
 
   const stopFetchingData = useCallback(() => {
@@ -113,10 +112,11 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {machineDetails.shifts_data ? 
-                      Object.values(machineDetails.shifts_data)
-                        .flatMap(shift => Object.values(shift))
-                        .reduce((total, data) => total + data.actual_production, 0) 
+                    {machineDetails.shifts ? 
+                      machineDetails.shifts
+                        .reduce((total, shift) => 
+                          total + Object.values(shift.timing).reduce((shiftTotal, timing) => shiftTotal + timing.actual_production, 0)
+                        , 0)
                       : '0'}
                   </Text>
                 </View>
@@ -127,8 +127,8 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {machineDetails.shifts_data ? 
-                      Object.keys(machineDetails.shifts_data)[0] 
+                    {machineDetails.shifts ? 
+                      machineDetails.shifts[0].shift_name || `Shift ${machineDetails.shifts[0].shift_no}` 
                       : 'N/A'}
                   </Text>
                 </View>
@@ -139,10 +139,8 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {machineDetails.shifts_data ? 
-                      Object.values(machineDetails.shifts_data)
-                        .flatMap(shift => Object.keys(shift))
-                        .join(', ') 
+                    {machineDetails.shifts ? 
+                      `${machineDetails.shifts[0].shift_start_time} - ${machineDetails.shifts[0].shift_end_time}` 
                       : 'N/A'}
                   </Text>
                 </View>
@@ -165,57 +163,59 @@ const LiveReportScreen = () => {
             <Text style={styles.headerText1}>Shift Wise Report</Text>
           </View>
           {machineDetails && machineDetails.shifts && machineDetails.shifts.map((shift, shiftIndex) => (
-            <View key={shiftIndex} style={styles.groupContainer}>
-              <Text style={styles.groupHeader}>
-                {shift.shift_name || `Shift ${shift.shift_no}`}
-              </Text>
-              <View style={styles.tableContainer1}>
-                <View style={styles.table}>
-                  <View style={styles.row}>
-                    <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
-                      <Text style={styles.headerText}>Time</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>Production Count</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>Target Count</Text>
-                    </View>
-                  </View>
-                  {Object.entries(shift.timing).map(([timeSlot, values], index) => (
-                    <View key={index} style={styles.row}>
-                      <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
-                        <Text style={styles.valueText}>{timeSlot}</Text>
+            shift.timing && Object.keys(shift.timing).length > 0 && (
+              <View key={shiftIndex} style={styles.groupContainer}>
+                <Text style={styles.groupHeader}>
+                  {shift.shift_name || `Shift ${shift.shift_no}`}
+                </Text>
+                <View style={styles.tableContainer1}>
+                  <View style={styles.table}>
+                    <View style={styles.row}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                        <Text style={styles.headerText}>Time</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
-                        <Text style={styles.valueText}>{values.actual_production}</Text>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <Text style={styles.headerText}>Production Count</Text>
                       </View>
-                      <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
-                        <Text style={styles.valueText}>{values.target_production}</Text>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <Text style={styles.headerText}>Target Count</Text>
                       </View>
                     </View>
-                  ))}
-                  <View style={styles.row}>
-                    <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
-                      <Text style={styles.headerText}>Total</Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>
-                        {Object.values(shift.timing).reduce((total, val) => total + val.actual_production, 0)}
-                      </Text>
-                    </View>
-                    <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
-                      <Text style={styles.headerText}>
-                        {Object.values(shift.timing).reduce((total, val) => total + val.target_production, 0)}
-                      </Text>
+                    {Object.entries(shift.timing).map(([timeSlot, values], index) => (
+                      <View key={index} style={styles.row}>
+                        <View style={[styles.cell, styles.columnValue, { width: 135 }]}>
+                          <Text style={styles.valueText}>{timeSlot}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                          <Text style={styles.valueText}>{values.actual_production}</Text>
+                        </View>
+                        <View style={[styles.cell, styles.columnValue, { width: 100 }]}>
+                          <Text style={styles.valueText}>{values.target_production}</Text>
+                        </View>
+                      </View>
+                    ))}
+                    <View style={styles.row}>
+                      <View style={[styles.cell, styles.columnHeader, { width: 135 }]}>
+                        <Text style={styles.headerText}>Total</Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <Text style={styles.headerText}>
+                          {Object.values(shift.timing).reduce((total, val) => total + val.actual_production, 0)}
+                        </Text>
+                      </View>
+                      <View style={[styles.cell, styles.columnHeader, { width: 100 }]}>
+                        <Text style={styles.headerText}>
+                          {Object.values(shift.timing).reduce((total, val) => total + val.target_production, 0)}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
+                {shiftIndex < machineDetails.shifts.length - 1 && (
+                  <View style={styles.dividerLine} />
+                )}
               </View>
-              {shiftIndex < machineDetails.shifts.length - 1 && (
-                <View style={styles.dividerLine} />
-              )}
-            </View>
+            )
           ))}
         </View>
         <View style={{ height: 20 }}></View>

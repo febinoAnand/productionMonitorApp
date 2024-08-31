@@ -77,20 +77,20 @@ export default function DownloadScreen() {
   const generateShiftWiseReportHtml = (data) => {
     const shifts = data.shifts || [];
     const filteredShifts = shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0);
-  
-    // Calculate grand totals for production and actual counts
     const grandTotal = filteredShifts.reduce((totals, shift) => {
-      const { production, actual } = Object.values(shift.timing).reduce((acc, [productionCount, actualCount]) => {
+      const { production, target, difference } = Object.values(shift.timing).reduce((acc, [productionCount, targetCount]) => {
         acc.production += productionCount;
-        acc.actual += actualCount;
+        acc.target += targetCount;
+        acc.difference += (productionCount - targetCount);
         return acc;
-      }, { production: 0, actual: 0 });
+      }, { production: 0, target: 0, difference: 0 });
   
       return {
         production: totals.production + production,
-        actual: totals.actual + actual
+        target: totals.target + target,
+        difference: totals.difference + difference
       };
-    }, { production: 0, actual: 0 });
+    }, { production: 0, target: 0, difference: 0 });
   
     const htmlContent = `
       <html>
@@ -103,6 +103,7 @@ export default function DownloadScreen() {
             h1 { text-align: center; margin-bottom: 10px; }
             .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
             .info p { margin: 0; }
+            .total-row { font-weight: bold; background-color: #f0f0f0; }
           </style>
         </head>
         <body>
@@ -116,34 +117,49 @@ export default function DownloadScreen() {
               <tr>
                 <th>Shifts</th>
                 <th>Time Range</th>
-                <th>Production Count / Actual Count</th>
-                <th>Total Production Count</th>
+                <th>Production Count</th>
+                <th>Target Count</th>
+                <th>Difference</th>
               </tr>
               ${filteredShifts.map((shift) => {
                 const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
-                const totalProductionCount = Object.values(shift.timing).reduce((total, [productionCount]) => total + productionCount, 0);
-                const totalActualCount = Object.values(shift.timing).reduce((total, [, actualCount]) => total + actualCount, 0);
-  
-                return Object.entries(shift.timing).map(([time, [productionCount, actualCount]]) => `
-                  <tr>
-                    ${Object.keys(shift.timing).indexOf(time) === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${shiftName}</td>` : ''}
-                    <td>${time}</td>
-                    <td>${productionCount}/${actualCount}</td>
-                    ${Object.keys(shift.timing).indexOf(time) === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${totalProductionCount}/${totalActualCount}</td>` : ''}
+                let shiftTotalProductionCount = 0;
+                let shiftTotalTargetCount = 0;
+                let shiftTotalDifference = 0;
+
+                const rows = Object.entries(shift.timing).map(([time, [productionCount, targetCount]]) => {
+                  shiftTotalProductionCount += productionCount;
+                  shiftTotalTargetCount += targetCount;
+                  const difference = productionCount - targetCount;
+                  shiftTotalDifference += difference;
+                  
+                  return `
+                    <tr>
+                      ${Object.keys(shift.timing).indexOf(time) === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${shiftName}</td>` : ''}
+                      <td>${time}</td>
+                      <td>${productionCount}</td>
+                      <td>${targetCount}</td>
+                      <td>${difference}</td>
+                    </tr>
+                  `;
+                }).join('');
+
+                return `${rows}
+                  <tr class="total-row">
+                    <td colspan="2"><strong>${shiftName} Total</strong></td>
+                    <td><strong>${shiftTotalProductionCount}</strong></td>
+                    <td><strong>${shiftTotalTargetCount}</strong></td>
+                    <td><strong>${shiftTotalDifference}</strong></td>
                   </tr>
-                `).join('');
+                `;
               }).join('')}
-              <tr>
-                <td colspan="3"><strong>Grand Total</strong></td>
-                <td><strong>${grandTotal.production}/${grandTotal.actual}</strong></td>
-              </tr>
             </table>
           ` : '<p>No shifts available for the selected date and machine.</p>'}
         </body>
       </html>
     `;
     return htmlContent;
-  };
+};
 
   const generateSummaryReportHtml = (data) => {
     if (!data || !data.machine_groups) {
@@ -239,9 +255,6 @@ export default function DownloadScreen() {
     if (date) setSelectedDate(date);
   };
 
-  const handleSearch = () => {
-    // fetchDataAndGeneratePDF();
-  };
 
   const handleSummaryReport = async () => {
     if (!selectedDate) {
@@ -304,9 +317,6 @@ export default function DownloadScreen() {
         <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
           <Text style={styles.datePickerText}>{selectedDate.toDateString()}</Text>
           <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={handleSearch}>
-          <Icon name="search" size={20} color="white" />
         </TouchableOpacity>
       </View>
       {showDatePicker && (
