@@ -20,18 +20,18 @@ const LiveReportScreen = () => {
     };
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      const unsubscribe = navigation.addListener('blur', () => {
-        navigation.replace('Dashboard');
-      });
-      return unsubscribe;
-    }, [navigation])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const unsubscribe = navigation.addListener('blur', () => {
+  //       navigation.replace('Dashboard');
+  //     });
+  //     return unsubscribe;
+  //   }, [navigation])
+  // );
 
   const fetchData = async () => {
     if (!id) {
-      console.warn('Machine ID is missing or undefined');
+      console.log('Machine ID is missing or undefined');
       return;
     }
 
@@ -47,7 +47,7 @@ const LiveReportScreen = () => {
       if (data && data.machine_id === id) {
         setMachineDetails(data);
       } else {
-        console.warn('Machine not found in the API response.');
+        console.log('Machine not found in the API response.');
       }
     } catch (error) {
       console.error('Error fetching data:', error);

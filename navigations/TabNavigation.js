@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+// import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 import DashboardScreen from '../screens/AppScreens/DashboardScreen';
 import LiveReportScreen from '../screens/AppScreens/LiveReportScreen';
@@ -12,16 +12,6 @@ import ProductionScreen from '../screens/AppScreens/ProductionScreen';
 // import DashboardScreen from '../screens/AuthScreens/testdashboard';
 
 const BottomTab = createBottomTabNavigator();
-const DashboardStack = createStackNavigator();
-
-function DashboardStackScreen() {
-  return (
-    <DashboardStack.Navigator>
-      <DashboardStack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: false }} />
-      <DashboardStack.Screen name="WORK CENTER" component={LiveReportScreen} options={{ headerShown: false }}/>
-    </DashboardStack.Navigator>
-  );
-}
 // const Stack = createStackNavigator();
 
 // const MainStack = () => (
@@ -61,7 +51,8 @@ export function TabGroup() {
         },
       })}
     >
-      <BottomTab.Screen name="PRODUCTION MONITOR" component={DashboardStackScreen} options={{ tabBarLabel: 'Home' }} />
+      <BottomTab.Screen name="PRODUCTION MONITOR" component={DashboardScreen} options={{ tabBarLabel: 'Home' }} />
+      <BottomTab.Screen name="WORK CENTER" component={LiveReportScreen} options={{ tabBarLabel: 'Work Center' }}/>
       <BottomTab.Screen name="PRODUCTION" component={ProductionScreen} options={{ tabBarLabel: 'Production' }} />
       <BottomTab.Screen name="REPORT" component={ReportScreen} options={{ tabBarLabel: 'Reports' }} />
       <BottomTab.Screen name="DOWNLOAD" component={DownloadScreen} options={{ tabBarLabel: 'Download' }} />

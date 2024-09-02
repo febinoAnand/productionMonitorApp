@@ -17,12 +17,10 @@ const ProductionScreen = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchGroupData = async (date) => {
-    setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         console.error('No token found in AsyncStorage');
-        setLoading(false);
         return;
       }
 
@@ -40,7 +38,6 @@ const ProductionScreen = () => {
       if (responseDate !== formattedDate) {
         console.log('Selected date does not match the fetched data date');
         setProductionData([]);
-        setLoading(false);
         return;
       }
 
@@ -68,8 +65,6 @@ const ProductionScreen = () => {
       }
     } catch (error) {
       console.error('Error fetching production data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -117,9 +112,7 @@ const ProductionScreen = () => {
           />
         )}
         <View style={{ height: 20 }}></View>
-        {loading ? (
-          <ActivityIndicator size="large" color="dodgerblue" style={styles.loader} />
-        ) : productionData.length === 0 ? (
+        { productionData.length === 0 ? (
           <Text style={styles.messageText}>No data available for the selected date.</Text>
         ) : (
           productionData.map((group, index) => {
