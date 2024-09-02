@@ -102,6 +102,16 @@ const LiveReportScreen = () => {
     return latestTimeSlot || 'N/A';
   };
 
+  const getLatestShift = (shifts) => {
+    if (!shifts || shifts.length === 0) return null;
+    const validShifts = shifts.filter(shift => Object.keys(shift.timing).length > 0);
+    return validShifts.reduce((latest, current) => {
+      return (latest && latest.shift_no > current.shift_no) ? latest : current;
+    }, null);
+  };
+
+  const latestShift = machineDetails ? getLatestShift(machineDetails.shifts) : null;
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -120,12 +130,7 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {machineDetails.shifts ? 
-                      machineDetails.shifts
-                        .reduce((total, shift) => 
-                          total + Object.values(shift.timing).reduce((shiftTotal, timing) => shiftTotal + timing.actual_production, 0)
-                        , 0)
-                      : '0'}
+                    {Object.values(latestShift.timing).reduce((total, timing) => total + timing.actual_production, 0)}
                   </Text>
                 </View>
               </View>
@@ -135,9 +140,7 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {machineDetails.shifts ? 
-                      machineDetails.shifts[0].shift_name || `Shift ${machineDetails.shifts[0].shift_no}` 
-                      : 'N/A'}
+                    {latestShift.shift_name || `Shift ${latestShift.shift_no}`}
                   </Text>
                 </View>
               </View>
@@ -147,9 +150,7 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {machineDetails.shifts ? 
-                      getLatestTiming(machineDetails.shifts[0].timing)
-                      : 'N/A'}
+                    {getLatestTiming(latestShift.timing)}
                   </Text>
                 </View>
               </View>
