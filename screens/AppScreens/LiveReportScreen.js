@@ -130,7 +130,12 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {Object.values(latestShift.timing).reduce((total, timing) => total + timing.actual_production, 0)}
+                    {machineDetails.shifts ? 
+                      machineDetails.shifts
+                        .reduce((total, shift) => 
+                          total + Object.values(shift.timing).reduce((shiftTotal, timing) => shiftTotal + timing.actual_production, 0)
+                        , 0)
+                      : '0'}
                   </Text>
                 </View>
               </View>
