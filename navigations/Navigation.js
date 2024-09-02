@@ -10,6 +10,7 @@ import TestDashboard from '../screens/AuthScreens/testdashboard';
 
 // import { TabGroup } from './TabNavigation';
 import Splash from '../screens/AuthScreens/splash';
+import LiveReportScreen from '../screens/AppScreens/LiveReportScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ export default function Navigation() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TestDashboard" component={TestDashboard} options={{ headerShown: false }} />
         <Stack.Screen name="TabScreen" component={TabGroup} options={{ headerShown: false }} />
+        <Stack.Screen name="WORK CENTER" component={LiveReportScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

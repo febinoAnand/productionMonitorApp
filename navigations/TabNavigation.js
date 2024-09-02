@@ -52,7 +52,7 @@ export function TabGroup() {
       })}
     >
       <BottomTab.Screen name="PRODUCTION MONITOR" component={DashboardScreen} options={{ tabBarLabel: 'Home' }} />
-      <BottomTab.Screen name="WORK CENTER" component={LiveReportScreen} options={{ tabBarLabel: 'Work Center' }}/>
+      {/* <BottomTab.Screen name="WORK CENTER" component={LiveReportScreen} options={{ tabBarLabel: 'Work Center' }}/> */}
       <BottomTab.Screen name="PRODUCTION" component={ProductionScreen} options={{ tabBarLabel: 'Production' }} />
       <BottomTab.Screen name="REPORT" component={ReportScreen} options={{ tabBarLabel: 'Reports' }} />
       <BottomTab.Screen name="DOWNLOAD" component={DownloadScreen} options={{ tabBarLabel: 'Download' }} />
