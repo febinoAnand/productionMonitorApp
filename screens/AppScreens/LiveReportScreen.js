@@ -94,6 +94,14 @@ const LiveReportScreen = () => {
     };
   }, [stopFetchingData]);
 
+  const getLatestTiming = (timing) => {
+    if (!timing) return 'N/A';
+    const latestTimeSlot = Object.keys(timing).reduce((latest, current) => {
+      return current > latest ? current : latest;
+    }, '');
+    return latestTimeSlot || 'N/A';
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -140,7 +148,7 @@ const LiveReportScreen = () => {
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
                     {machineDetails.shifts ? 
-                      `${machineDetails.shifts[0].shift_start_time} - ${machineDetails.shifts[0].shift_end_time}` 
+                      getLatestTiming(machineDetails.shifts[0].timing)
                       : 'N/A'}
                   </Text>
                 </View>
