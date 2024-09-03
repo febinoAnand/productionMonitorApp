@@ -112,9 +112,11 @@ const ProductionScreen = () => {
           />
         )}
         <View style={{ height: 20 }}></View>
+        <View style={styles.whiteContainer}>
         { productionData.length === 0 ? (
           <Text style={styles.messageText}>No data available for the selected date.</Text>
         ) : (
+          
           productionData.map((group, index) => {
             const totalCounts = {};
 
@@ -204,6 +206,8 @@ const ProductionScreen = () => {
             );
           })
         )}
+        </View>
+        <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
   );
@@ -236,6 +240,22 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginLeft: 10,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
+  },
+  whiteContainer: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -300,6 +320,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 5,
+    height: 40
   },
   columnHeader: {
     backgroundColor: 'dodgerblue',
@@ -307,16 +328,17 @@ const styles = StyleSheet.create({
   },
   grayCell: {
     backgroundColor: '#ffffff',
-    height: 30
+    height: 50
   },
   blackCell: {
     backgroundColor: '#ffffff',
+    height: 50
   },
   grayText: {
     color: 'black',
   },
   blackText: {
-    color: 'black',
+    color: 'lightblack',
   },
   headerText: {
     fontWeight: 'bold',
@@ -326,11 +348,11 @@ const styles = StyleSheet.create({
   },
   headerText1: {
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 14,
     textAlign: 'center',
   },
   valueText: {
-    fontSize: 10,
+    fontSize: 12,
     textAlign: 'center',
   },
   totalRow: {

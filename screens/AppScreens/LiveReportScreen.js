@@ -94,12 +94,33 @@ const LiveReportScreen = () => {
     };
   }, [stopFetchingData]);
 
-  const getLatestTiming = (timing) => {
-    if (!timing) return 'N/A';
-    const latestTimeSlot = Object.keys(timing).reduce((latest, current) => {
-      return current > latest ? current : latest;
-    }, '');
-    return latestTimeSlot || 'N/A';
+  const getLatestTiming = (shift) => {
+    if (!shift.shift_start_time) return { startTime: 'N/A', endTime: 'N/A' };
+    const startTime = shift.shift_start_time.split(' ')[1];
+    const [hours, minutes, seconds] = startTime.split(':').map(Number);
+    const period = hours < 12 ? 'AM' : 'PM';
+    let newHours = hours;
+  
+    if (newHours > 12) {
+      newHours -= 12;
+    } else if (newHours === 0) {
+      newHours = 12;
+    }
+  
+    const startTimeDisplay = `${newHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  
+    let endHours = (hours + 8) % 24;
+    let endPeriod = endHours < 12 ? 'AM' : 'PM';
+  
+    if (endHours > 12) {
+      endHours -= 12;
+    } else if (endHours === 0) {
+      endHours = 12;
+    }
+  
+    const endTimeDisplay = `${endHours}:${minutes.toString().padStart(2, '0')} ${endPeriod}`;
+  
+    return { startTime: startTimeDisplay, endTime: endTimeDisplay };
   };
 
   const getLatestShift = (shifts) => {
@@ -155,7 +176,17 @@ const LiveReportScreen = () => {
                 </View>
                 <View style={[styles.cell1, styles.columnValue1]}>
                   <Text style={styles.valueText}>
-                    {getLatestTiming(latestShift.timing)}
+                    {getLatestTiming(latestShift).startTime} - {getLatestTiming(latestShift).endTime}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.row1}>
+                <View style={[styles.cell1, styles.columnHeader1]}>
+                  <Text style={styles.headerText2}>Current Shift Count</Text>
+                </View>
+                <View style={[styles.cell1, styles.columnValue1]}>
+                  <Text style={styles.valueText}>
+                    {latestShift ? Object.values(latestShift.timing).reduce((total, val) => total + val.actual_production, 0) : '0'}
                   </Text>
                 </View>
               </View>
@@ -277,6 +308,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#59adff',
+    textAlign: 'center'
   },
   headerText1: {
     fontSize: 20,
@@ -284,7 +316,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   headerText2: {
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -325,14 +357,14 @@ const styles = StyleSheet.create({
   },
   table: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'black',
     borderRadius: 5,
     overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: 'gray',
   },
   cell: {
     flex: 1,
@@ -340,7 +372,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 5,
     borderRightWidth: 1,
-    borderColor: 'lightgray',
+    borderColor: 'gray',
   },
   columnHeader: {
     backgroundColor: 'white',
@@ -349,7 +381,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   valueText: {
-    fontSize: 10,
+    fontSize: 13,
     color: '#333',
   },
   centeredRow: {
