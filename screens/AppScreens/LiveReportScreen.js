@@ -89,12 +89,14 @@ const LiveReportScreen = () => {
   }, [stopFetchingData]);
 
   const getLatestTiming = (shift) => {
-    if (!shift.shift_start_time) return { startTime: 'N/A', endTime: 'N/A' };
+    if (!shift || !shift.shift_start_time) {
+      return { startTime: 'N/A', endTime: 'N/A' };
+    }
     const startTime = shift.shift_start_time.split(' ')[1];
     const [hours, minutes, seconds] = startTime.split(':').map(Number);
     const period = hours < 12 ? 'AM' : 'PM';
     let newHours = hours;
-
+  
     if (newHours > 12) {
       newHours -= 12;
     } else if (newHours === 0) {
@@ -164,7 +166,7 @@ const LiveReportScreen = () => {
                     </View>
                     <View style={[styles.cell1, styles.columnValue1]}>
                       <Text style={styles.valueText}>
-                        {latestShift.shift_name || `Shift ${latestShift.shift_no}`}
+                        {latestShift ? (latestShift.shift_name || `Shift ${latestShift.shift_no}`) : 'No shift available'}
                       </Text>
                     </View>
                   </View>
