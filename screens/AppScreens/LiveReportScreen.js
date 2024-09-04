@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: 'ghostwhite',
+    backgroundColor: '#f1f1f1',
   },
   container: {
     width: '100%',
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     marginTop: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#f6f6f6',
     shadowOffset: {
       width: 0,
       height: 10,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   whiteContainer: {
     width: '90%',
-    backgroundColor: 'white',
+    backgroundColor: '#f1f1f1',
     borderRadius: 5,
     padding: 10,
     marginTop: 20,
@@ -380,10 +380,10 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
   },
   columnHeader: {
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
   },
   columnValue: {
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
   },
   valueText: {
     fontSize: 13,
@@ -418,10 +418,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   columnHeader1: {
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
   },
   columnValue1: {
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
   },
 });
 

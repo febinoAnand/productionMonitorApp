@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: 'ghostwhite',
+    backgroundColor: '#f1f1f1',
     paddingVertical: 20,
   },
   dateContainer: {

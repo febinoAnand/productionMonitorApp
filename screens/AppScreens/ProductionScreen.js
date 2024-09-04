@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: 'ghostwhite',
+    backgroundColor: '#f1f1f1',
   },
   container: {
     width: '90%',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   whiteContainer: {
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
     borderRadius: 10,
     padding: 12,
     borderWidth: 1,
@@ -285,6 +285,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   table: {
+    backgroundColor: '#f6f6f6',
     width: '100%',
     paddingTop: 9,
     shadowColor: '#000',
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   tableHeader: {
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
     padding: 12,
   },
   tableTitle: {
@@ -327,11 +328,11 @@ const styles = StyleSheet.create({
     height: 50
   },
   grayCell: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f6f6f6',
     height: 50
   },
   blackCell: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f6f6f6',
     height: 50
   },
   grayText: {
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   totalRow: {
-    backgroundColor: 'white',
+    backgroundColor: '#f6f6f6',
   },
 });
 

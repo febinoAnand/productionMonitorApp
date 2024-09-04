@@ -97,38 +97,50 @@ const DashboardScreen = () => {
     navigation.navigate('WORK CENTER', { id: machine.machine_id });
   };
 
+  const getSquareBackgroundColor = (production_count, target_production) => {
+    if (target_production === 0) return '#f6f6f6';
+    
+    const percentage = (production_count / target_production) * 100;
+    
+    if (percentage < 85) return '#ffabab';
+    if (percentage >= 85 && percentage < 95) return '#ffea94';
+    return '#c3ffab';
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <View style={{ height: 20 }}></View>
       <View style={styles.container}>
         {groups.map((group) => {
           if (group.machines.length === 0) return null;
 
           return (
-            <View key={group.group_id} style={styles.sectionContainer}>
-              <View style={styles.sectionHeader}>
+            <View key={group.group_id} style={styles.groupContainer}>
+              <View style={styles.sectionHeaderContainer}>
                 <Text style={styles.sectionHeaderText}>{group.group_name}</Text>
               </View>
-              <View style={styles.squareContainer}>
-                {group.machines.map((machine) => (
-                  <TouchableOpacity
-                    key={machine.machine_id}
-                    style={styles.square}
-                    onPress={() => handleSquarePress(machine)}
-                  >
-                    <Text style={styles.squareText}>{machine.machine_name}</Text>
-                    <View style={styles.oval}>
-                      <Text style={styles.ovalText}>
-                        {machine.production_count} / {machine.target_production}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+              <View style={styles.sectionContainer}>
+                <View style={styles.squareContainer}>
+                  {group.machines.map((machine) => (
+                    <TouchableOpacity
+                      key={machine.machine_id}
+                      style={[styles.square, { backgroundColor: getSquareBackgroundColor(machine.production_count, machine.target_production) }]}
+                      onPress={() => handleSquarePress(machine)}
+                    >
+                      <Text style={styles.squareText}>{machine.machine_name}</Text>
+                      <View style={styles.oval}>
+                      <Text style={styles.ovalText}>{machine.production_count}</Text>
+                      <View style={styles.line} />
+                      <Text style={styles.ovalText}>{machine.target_production}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             </View>
           );
         })}
       </View>
+      <View style={{ height: 20 }}></View>
     </ScrollView>
   );
 };
@@ -138,17 +150,19 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: 'ghostwhite',
+    backgroundColor: '#f1f1f1',
   },
   container: {
     width: '100%',
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
-  sectionContainer: {
-    width: '90%',
-    marginBottom: 20,
-  },
+  // sectionContainer: {
+  //   width: '90%',
+  //   marginBottom: 30,
+  //   backgroundColor: '#b0b0b0',
+  //   borderRadius: 20,
+  // },
   sectionHeader: {
     height: 40,
     justifyContent: 'center',
@@ -156,28 +170,72 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  sectionHeaderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+  groupContainer: {
+    width: '90%',
   },
+  sectionHeaderContainer: {
+    width: '80%',
+    left: 37,
+    top: 50,
+    backgroundColor: '#64b8ff',
+    borderRadius: 15,
+    borderColor: '#64b8ff',
+    borderWidth: 2,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    zIndex: 10,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
+  },
+  sectionHeaderText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  sectionContainer: {
+    backgroundColor: '#b0b0b0',
+    borderRadius: 20,
+    padding: 20,
+    borderColor: '#b0b0b0',
+    borderWidth: 2,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5.84,
+    elevation: 8,
+  },
+  // sectionHeaderText: {
+  //   fontSize: 24,
+  //   fontWeight: 'bold',
+  //   color: '#333',
+  // },
   squareContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     marginTop: 10,
+    paddingTop: 20,
+    left: 3,
   },
   square: {
-    width: '32.5%',
-    height: 110,
-    backgroundColor: 'ghostwhite',
-    borderRadius: 5,
-    borderWidth: 1,
+    width: '43%',
+    height: 150,
+    backgroundColor: '#f6f6f6',
+    borderRadius: 20,
     borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 1,
+    margin: 10,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -187,25 +245,31 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   oval: {
-    width: '60%',
+    width: '80%',
     height: '60%',
-    top: 35,
-    backgroundColor: '#59adff',
-    borderRadius: 100,
+    top: 45,
+    backgroundColor: '#64b8ff',
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
   },
   ovalText: {
-    fontSize: 12,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
+    color: 'black',
   },
   squareText: {
-    bottom: 36,
-    fontSize: 14,
+    bottom: 50,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+  },
+  line: {
+    height: 3,
+    width: 60,
+    backgroundColor: 'black',
+    marginHorizontal: 5,
   },
 });
 

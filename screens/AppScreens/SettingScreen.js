@@ -195,15 +195,15 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: 'ghostwhite',
+        backgroundColor: '#f1f1f1',
     },
     box: {
         width: '90%',
         padding: 20,
         borderWidth: 1,
-        borderColor: 'white',
+        borderColor: '#f6f6f6',
         borderRadius: 10,
-        backgroundColor: 'white',
+        backgroundColor: '#f6f6f6',
         shadowOffset: {
             width: 0,
             height: 2,
