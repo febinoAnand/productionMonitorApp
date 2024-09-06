@@ -100,7 +100,7 @@ export default function Splash({ route, navigation }) {
                 //if session expired...
                 if (elapsedTimeInSeconds > user_expiry_time) { 
                     // console.log("login screen");
-                    nextScreen = 'Login';
+                    nextScreen = 'TabScreen';
                     setAuthState("1");
                     await SecureStore.setItemAsync(authStateKey, "1");
                     // console.log("login------");

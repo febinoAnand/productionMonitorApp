@@ -4,6 +4,8 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 
 const LiveReportScreen = () => {
   const navigation = useNavigation();
@@ -21,7 +23,37 @@ const LiveReportScreen = () => {
     };
   }, []);
 
+  const checkToken = async () => {
+    try {
+      const networkState = await NetInfo.fetch();
+      if (!networkState.isConnected) {
+        Alert.alert('No Internet', 'Please check your internet connection.');
+        return false;
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return false;
+
+      await axios.get(`${BaseURL}Userauth/check-token/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      return true;
+    } catch (error) {
+      console.log('Token validation failed:', error);
+      return false;
+    }
+  };
+
   const fetchData = async () => {
+    const isTokenValid = await checkToken();
+    if (!isTokenValid) {
+      const networkState = await NetInfo.fetch();
+      if (networkState.isConnected) {
+        navigation.navigate('Login');
+      }
+      return;
+    }
     if (!id) {
       console.log('Machine ID is missing or undefined');
       return;

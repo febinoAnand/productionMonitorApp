@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
+import NetInfo from '@react-native-community/netinfo';
 
 const DashboardScreen = () => {
   const [groups, setGroups] = useState([]);
@@ -12,6 +13,12 @@ const DashboardScreen = () => {
 
   const checkToken = async () => {
     try {
+      const networkState = await NetInfo.fetch();
+      if (!networkState.isConnected) {
+        Alert.alert('No Internet', 'Please check your internet connection.');
+        return false;
+      }
+
       const token = await AsyncStorage.getItem('token');
       if (!token) return false;
 
@@ -29,7 +36,10 @@ const DashboardScreen = () => {
   const fetchGroupData = async () => {
     const isTokenValid = await checkToken();
     if (!isTokenValid) {
-      navigation.navigate('Login');
+      const networkState = await NetInfo.fetch();
+      if (networkState.isConnected) {
+        navigation.navigate('Login');
+      }
       return;
     }
     try {

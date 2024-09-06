@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -9,6 +10,7 @@ import * as Print from 'expo-print';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
+import NetInfo from '@react-native-community/netinfo';
 
 export default function DownloadScreen() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -18,12 +20,43 @@ export default function DownloadScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingShiftWise, setLoadingShiftWise] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchDropdownOptions();
   }, []);
 
+  const checkToken = async () => {
+    try {
+      const networkState = await NetInfo.fetch();
+      if (!networkState.isConnected) {
+        Alert.alert('No Internet', 'Please check your internet connection.');
+        return false;
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return false;
+
+      await axios.get(`${BaseURL}Userauth/check-token/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      return true;
+    } catch (error) {
+      console.log('Token validation failed:', error);
+      return false;
+    }
+  };
+
   const fetchDropdownOptions = async () => {
+    const isTokenValid = await checkToken();
+    if (!isTokenValid) {
+      const networkState = await NetInfo.fetch();
+      if (networkState.isConnected) {
+        navigation.navigate('Login');
+      }
+      return;
+    }
     try {
       const response = await axios.get(`${BaseURL}devices/machine/`);
       const machines = response.data;

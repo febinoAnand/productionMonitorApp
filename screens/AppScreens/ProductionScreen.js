@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Activit
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
-import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import debounce from 'lodash/debounce';
+import NetInfo from '@react-native-community/netinfo';
 
 const ProductionScreen = () => {
   const [productionData, setProductionData] = useState([]);
@@ -15,8 +16,39 @@ const ProductionScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [searchDate, setSearchDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
+
+  const checkToken = async () => {
+    try {
+      const networkState = await NetInfo.fetch();
+      if (!networkState.isConnected) {
+        Alert.alert('No Internet', 'Please check your internet connection.');
+        return false;
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return false;
+
+      await axios.get(`${BaseURL}Userauth/check-token/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      return true;
+    } catch (error) {
+      console.log('Token validation failed:', error);
+      return false;
+    }
+  };
 
   const fetchGroupData = async (date) => {
+    const isTokenValid = await checkToken();
+    if (!isTokenValid) {
+      const networkState = await NetInfo.fetch();
+      if (networkState.isConnected) {
+        navigation.navigate('Login');
+      }
+      return;
+    }
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
