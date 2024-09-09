@@ -453,6 +453,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'black',
   },
   cell: {
+    flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
     justifyContent: 'center',

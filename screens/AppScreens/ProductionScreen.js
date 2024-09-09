@@ -330,6 +330,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   tableHeader: {
+    flex: 1,
     backgroundColor: '#f6f6f6',
     padding: 12,
   },
@@ -348,6 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'lightblue',
   },
   cell: {
+    flex: 1,
     borderRightWidth: 1,
     borderColor: 'black',
     justifyContent: 'center',
