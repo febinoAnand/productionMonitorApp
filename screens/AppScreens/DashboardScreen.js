@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 import NetInfo from '@react-native-community/netinfo';
+import { RefreshControl } from 'react-native';
 
 const DashboardScreen = () => {
   const [groups, setGroups] = useState([]);
-  const intervalRef = useRef(null);
   const navigation = useNavigation();
+  const websocketRef = useRef(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const checkToken = async () => {
     try {
@@ -49,6 +51,7 @@ const DashboardScreen = () => {
       });
   
       const responseData = response.data;
+      console.log("responce :",response.data)
       if (responseData && Array.isArray(responseData.groups)) {
         const updatedGroups = responseData.groups.map(group => ({
           ...group,
@@ -70,37 +73,60 @@ const DashboardScreen = () => {
     }
   };
 
-  const startFetchingData = () => {
-    console.log('Starting data fetch interval');
-    fetchGroupData();
-    intervalRef.current = setInterval(() => {
-      console.log('Fetching data...');
-      fetchGroupData();
-    }, 20000);
+  const connectWebSocket = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const wsURL = `${BaseURL.replace('https', 'wss')}data/dashboard-data/`;
+
+    websocketRef.current = new WebSocket(wsURL, [], {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    websocketRef.current.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+
+    websocketRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data && Array.isArray(data.groups)) {
+        const updatedGroups = data.groups.map(group => ({
+          ...group,
+          machines: group.machines.map(machine => ({
+            ...machine,
+            production_count: machine.production_count || 0,
+            target_production: machine.target_production || 0,
+          })),
+        }));
+        setGroups(updatedGroups.reverse());
+      }
+    };
+
+    websocketRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error.message);
+    };
+
+    websocketRef.current.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
   };
-  
-  const stopFetchingData = () => {
-    if (intervalRef.current) {
-      console.log('Stopping data fetch interval');
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+
+  const disconnectWebSocket = () => {
+    if (websocketRef.current) {
+      websocketRef.current.close();
+      websocketRef.current = null;
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      startFetchingData();
+      fetchGroupData();
+      connectWebSocket();
       return () => {
-        stopFetchingData();
+        disconnectWebSocket();
       };
     }, [])
   );
-
-  useEffect(() => {
-    return () => {
-      stopFetchingData();
-    };
-  }, []);
 
   const handleSquarePress = (machine) => {
     console.log('Selected Machine ID:', machine.machine_id);
@@ -117,8 +143,16 @@ const DashboardScreen = () => {
     return '#c3ffab';
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchGroupData();
+    setRefreshing(false);
+  }, []);
+
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
+    <ScrollView contentContainerStyle={styles.scrollViewContent} 
+    refreshControl={ <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
+    >
       <View style={styles.container}>
         {groups.map((group) => {
           if (group.machines.length === 0) return null;
