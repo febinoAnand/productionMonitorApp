@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
@@ -12,9 +12,9 @@ import NetInfo from '@react-native-community/netinfo';
 const ProductionScreen = () => {
   const [productionData, setProductionData] = useState([]);
   const [shiftHeaders, setShiftHeaders] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [searchDate, setSearchDate] = useState(new Date());
+  const [searchDate, setSearchDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
@@ -41,7 +41,7 @@ const ProductionScreen = () => {
     }
   };
 
-  const fetchGroupData = async (date) => {
+  const fetchGroupData = async (date = null) => {
     const isTokenValid = await checkToken();
     if (!isTokenValid) {
       const networkState = await NetInfo.fetch();
@@ -56,8 +56,7 @@ const ProductionScreen = () => {
         console.error('No token found in AsyncStorage');
         return;
       }
-
-      const formattedDate = date.toISOString().split('T')[0];
+      const formattedDate = date ? date.toISOString().split('T')[0] : null;
 
       const productionResponse = await axios.post(
         `${BaseURL}data/production/`,
@@ -68,11 +67,9 @@ const ProductionScreen = () => {
       );
 
       const responseDate = productionResponse.data.date;
-      if (responseDate !== formattedDate) {
-        console.log('Selected date does not match the fetched data date');
-        setProductionData([]);
-        return;
-      }
+      const fetchedDate = new Date(responseDate);
+      setSelectedDate(fetchedDate);
+      setSearchDate(fetchedDate);
 
       const productionData = productionResponse.data.machine_groups || [];
 
@@ -105,24 +102,19 @@ const ProductionScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (searchDate) {
-        fetchDataWithDebounce(searchDate);
-      }
+      fetchGroupData();
       return () => {
         fetchDataWithDebounce.cancel();
       };
-    }, [searchDate])
+    }, [])
   );
-
-  useEffect(() => {
-    fetchGroupData(searchDate);
-  }, [searchDate]);
 
   const handleDateChange = (event, date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (date) {
       setSelectedDate(date);
       setSearchDate(date);
+      fetchGroupData(date);
     }
   };
 
@@ -146,13 +138,13 @@ const ProductionScreen = () => {
         <View style={{ height: 20 }}></View>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
-            <Text style={styles.datePickerText}>{selectedDate.toISOString().split('T')[0]}</Text>
+            <Text style={styles.datePickerText}>{selectedDate ? selectedDate.toISOString().split('T')[0] : 'Select Date'}</Text>
             <Icon name="calendar" size={20} color="black" style={styles.calendarIcon} />
           </TouchableOpacity>
         </View>
         {showDatePicker && (
           <DateTimePicker
-            value={selectedDate}
+            value={selectedDate || new Date()}
             mode="date"
             display="default"
             onChange={handleDateChange}
