@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -15,9 +15,74 @@ const ProductionScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [searchDate, setSearchDate] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [webSocket, setWebSocket] = useState(null);
+  const selectedDateRef = useRef(selectedDate);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+  }, [selectedDate]);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const isTokenValid = await checkToken();
+      if (!isTokenValid) {
+        const networkState = await NetInfo.fetch();
+        if (networkState.isConnected) {
+          navigation.navigate('Login');
+        }
+        return;
+      }
+      await fetchGroupData();
+    };
+
+    fetchInitialData();
+
+    const ws = new WebSocket(`${BaseURL.replace('https', 'wss')}data/production/`);
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      const receivedData = JSON.parse(event.data);
+      const selectedDateFormatted = selectedDateRef.current ? selectedDateRef.current.toISOString().split('T')[0] : null;
+      // console.log('Selected Date from Calendar:', selectedDateFormatted);
+      
+      const receivedDate = receivedData.date ? new Date(receivedData.date).toISOString().split('T')[0] : null;
+      // console.log('Received Date from WebSocket:', receivedDate);
+
+      if (receivedDate && receivedDate === selectedDateFormatted) {
+        console.log('Date matches, updating data.');
+        setProductionData(prevData => receivedData.data ? receivedData.data : prevData);
+        const reversedProductionData = receivedData.data ? [...receivedData.data].reverse() : [];
+
+        setProductionData(prevData => reversedProductionData);
+
+    if (receivedData.shiftHeaders) {
+      setShiftHeaders(receivedData.shiftHeaders);
+    }
+      } else {
+        console.log('WebSocket data does not match the selected date.');
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    setWebSocket(ws);
+
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [navigation]);
 
   const checkToken = async () => {
     try {
@@ -82,7 +147,7 @@ const ProductionScreen = () => {
         }))
         .filter(group => group.machines.length > 0);
 
-      console.log('Filtered Production Data:', filteredData);
+      console.log('Filtered Production Data from API:', filteredData);
 
       setProductionData(filteredData.reverse());
 
