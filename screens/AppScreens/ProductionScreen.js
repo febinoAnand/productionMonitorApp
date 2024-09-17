@@ -45,25 +45,43 @@ const ProductionScreen = () => {
     };
 
     ws.onmessage = (event) => {
-      const receivedData = JSON.parse(event.data);
-      const selectedDateFormatted = selectedDateRef.current ? selectedDateRef.current.toISOString().split('T')[0] : null;
-      // console.log('Selected Date from Calendar:', selectedDateFormatted);
-      
-      const receivedDate = receivedData.date ? new Date(receivedData.date).toISOString().split('T')[0] : null;
-      // console.log('Received Date from WebSocket:', receivedDate);
-
-      if (receivedDate && receivedDate === selectedDateFormatted) {
-        console.log('Date matches, updating data.');
-        setProductionData(prevData => receivedData.data ? receivedData.data : prevData);
-        const reversedProductionData = receivedData.data ? [...receivedData.data].reverse() : [];
-
-        setProductionData(prevData => reversedProductionData);
-
-    if (receivedData.shiftHeaders) {
-      setShiftHeaders(receivedData.shiftHeaders);
-    }
-      } else {
-        console.log('WebSocket data does not match the selected date.');
+      try {
+        const receivedData = JSON.parse(event.data);
+        console.log('Received WebSocket data:', receivedData);
+    
+        const selectedDateFormatted = selectedDateRef.current
+          ? selectedDateRef.current.toISOString().split('T')[0]
+          : null;
+        const receivedDate = receivedData?.date
+          ? new Date(receivedData.date).toISOString().split('T')[0]
+          : null;
+    
+        if (receivedDate && receivedDate === selectedDateFormatted) {
+          console.log('Date matches, updating data.');
+          const productionData = receivedData.machine_groups || [];
+          const filteredData = productionData
+            .map(group => ({
+              ...group,
+              machines: group.machines ? group.machines.filter(machine =>
+                (machine.shifts || []).length > 0
+              ) : [],
+            }))
+            .filter(group => group.machines.length > 0);
+          const reversedGroups = filteredData.reverse();
+          const firstMachineShifts = reversedGroups.length > 0 && reversedGroups[0].machines.length > 0
+            ? reversedGroups[0].machines.flatMap(machine => machine.shifts || [])
+            : [];
+          const shifts = firstMachineShifts
+            .filter(shift => shift.shift_name || shift.shift_no)
+            .map(shift => shift.shift_name || `Shift-${shift.shift_no}`);
+          console.log('Updating shift headers:', [...new Set(shifts)]);
+          setShiftHeaders([...new Set(shifts)]);
+          setProductionData(reversedGroups);
+        } else {
+          console.log('WebSocket data does not match the selected date.');
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
       }
     };
 
