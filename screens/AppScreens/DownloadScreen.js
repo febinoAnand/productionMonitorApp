@@ -20,6 +20,8 @@ export default function DownloadScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingShiftWise, setLoadingShiftWise] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState('PDF');
+  const [showFormatDropdown, setShowFormatDropdown] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function DownloadScreen() {
     }
   };
 
-  const fetchDataAndGeneratePDF = async () => {
+  const fetchDataAndGenerateReport = async () => {
     if (!selectedOption || !selectedDate) {
       Alert.alert('Missing Information', 'Please select a machine and date.');
       return;
@@ -89,19 +91,26 @@ export default function DownloadScreen() {
       });
       console.log('API Response:', response.data);
       const data = response.data;
-      const reportHtml = generateShiftWiseReportHtml(data);
 
-      const { uri } = await Print.printToFileAsync({ html: reportHtml });
-      if (Platform.OS === 'ios') {
-        await Sharing.shareAsync(uri);
+      if (selectedFormat === 'PDF') {
+        const reportHtml = generateShiftWiseReportHtml(data);
+        const { uri } = await Print.printToFileAsync({ html: reportHtml });
+        if (Platform.OS === 'ios') {
+          await Sharing.shareAsync(uri);
+        } else {
+          const pdfName = `${FileSystem.documentDirectory}shift_wise_report.pdf`;
+          await FileSystem.moveAsync({ from: uri, to: pdfName });
+          await Sharing.shareAsync(pdfName);
+        }
       } else {
-        const pdfName = `${FileSystem.documentDirectory}shift_wise_report.pdf`;
-        await FileSystem.moveAsync({ from: uri, to: pdfName });
-        await Sharing.shareAsync(pdfName);
+        const csvContent = generateShiftWiseReportCsv(data);
+        const csvName = `${FileSystem.documentDirectory}shift_wise_report.csv`;
+        await FileSystem.writeAsStringAsync(csvName, csvContent, { encoding: FileSystem.EncodingType.UTF8 });
+        await Sharing.shareAsync(csvName);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      Alert.alert('Error', 'Failed to fetch data or generate PDF.');
+      Alert.alert('Error', 'Failed to fetch data or generate report.');
     } finally {
       setLoadingShiftWise(false);
     }
@@ -194,6 +203,86 @@ export default function DownloadScreen() {
     return htmlContent;
 };
 
+const generateShiftWiseReportCsv = (data) => {
+  const shifts = data.shifts || [];
+  const header = 'Shifts,Time Range,Production Count,Target Count,Difference\n';
+  const rows = shifts.flatMap(shift => {
+      const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
+      return Object.entries(shift.timing).map(([time, [productionCount, targetCount]], index) => 
+          index === 0
+          ? `${shiftName},${time},${productionCount},${targetCount},${productionCount - targetCount}`
+          : `,${time},${productionCount},${targetCount},${productionCount - targetCount}`
+      );
+  }).join('\n');
+  
+  return header + rows;
+};
+
+  const handleDropdownSelect = (option) => {
+    setSelectedOption(option);
+    setShowDropdown(false);
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleFormatDropdownSelect = (format) => {
+    setSelectedFormat(format);
+    setShowFormatDropdown(false);
+  };
+
+  const toggleFormatDropdown = () => {
+    setShowFormatDropdown(!showFormatDropdown);
+  };
+
+  const handleDateChange = (event, date) => {
+    setShowDatePicker(false);
+    if (date) setSelectedDate(date);
+  };
+
+  const handleSummaryReport = async () => {
+    if (!selectedDate) {
+      Alert.alert('Missing Information', 'Please select a date.');
+      return;
+    }
+
+    setLoadingSummary(true);
+
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.post(`${BaseURL}data/production/`, {
+        date: selectedDate.toISOString().split('T')[0]
+      }, {
+        headers: { Authorization: `Token ${token}` }
+      });
+      console.log('API Response:', response.data);
+      const data = response.data;
+
+      if (selectedFormat === 'PDF') {
+        const reportHtml = generateSummaryReportHtml(data);
+        const { uri } = await Print.printToFileAsync({ html: reportHtml });
+        if (Platform.OS === 'ios') {
+          await Sharing.shareAsync(uri);
+        } else {
+          const pdfName = `${FileSystem.documentDirectory}summary_report.pdf`;
+          await FileSystem.moveAsync({ from: uri, to: pdfName });
+          await Sharing.shareAsync(pdfName);
+        }
+      } else {
+        const csvContent = generateSummaryReportCsv(data);
+        const csvName = `${FileSystem.documentDirectory}summary_report.csv`;
+        await FileSystem.writeAsStringAsync(csvName, csvContent, { encoding: FileSystem.EncodingType.UTF8 });
+        await Sharing.shareAsync(csvName);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      Alert.alert('Error', 'Failed to fetch data or generate report.');
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
   const generateSummaryReportHtml = (data) => {
     if (!data || !data.machine_groups) {
       return '<p>No data available for the summary report.</p>';
@@ -274,54 +363,45 @@ export default function DownloadScreen() {
     return htmlContent;
   };
 
-  const handleDropdownSelect = (option) => {
-    setSelectedOption(option);
-    setShowDropdown(false);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const handleDateChange = (event, date) => {
-    setShowDatePicker(false);
-    if (date) setSelectedDate(date);
-  };
-
-
-  const handleSummaryReport = async () => {
-    if (!selectedDate) {
-      Alert.alert('Missing Information', 'Please select a date.');
-      return;
-    }
-
-    setLoadingSummary(true);
-
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(`${BaseURL}data/production/`, {
-        date: selectedDate.toISOString().split('T')[0]
-      }, {
-        headers: { Authorization: `Token ${token}` }
+  const generateSummaryReportCsv = (data) => {
+    const groupedData = data.machine_groups || [];
+    const shifts = new Set();
+    groupedData.forEach(group => {
+      group.machines.forEach(machine => {
+        machine.shifts.forEach(shift => {
+          if (shift.shift_name) {
+            shifts.add(shift.shift_name);
+          } else if (shift.shift_no) {
+            shifts.add(`Shift ${shift.shift_no}`);
+          }
+        });
       });
-      console.log('API Response:', response.data);
-      const data = response.data;
-      const reportHtml = generateSummaryReportHtml(data);
-
-      const { uri } = await Print.printToFileAsync({ html: reportHtml });
-      if (Platform.OS === 'ios') {
-        await Sharing.shareAsync(uri);
-      } else {
-        const pdfName = `${FileSystem.documentDirectory}summary_report.pdf`;
-        await FileSystem.moveAsync({ from: uri, to: pdfName });
-        await Sharing.shareAsync(pdfName);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      Alert.alert('Error', 'Failed to fetch data or generate PDF.');
-    } finally {
-      setLoadingSummary(false);
-    }
+    });
+    
+    const shiftHeaders = Array.from(shifts);
+    const header = 'Group,Work Center,' +
+      shiftHeaders.join(',') + 
+      ',Production Count,Total Production Count\n';
+    const rows = groupedData.flatMap(group => {
+      const groupTotalProduction = group.machines.reduce((total, machine) => {
+        return total + machine.shifts.reduce((shiftTotal, shift) => shiftTotal + (shift.total_shift_production_count || 0), 0);
+      }, 0);
+  
+      return group.machines.map((machine, index) => {
+        const productionCounts = shiftHeaders.map(header => {
+          const shift = machine.shifts.find(s => s.shift_name === header || `Shift ${s.shift_no}` === header);
+          return shift ? shift.total_shift_production_count : '0';
+        }).join(',');
+  
+        const totalProduction = machine.shifts.reduce((total, shift) => total + (shift.total_shift_production_count || 0), 0);
+        const groupName = index === 0 ? group.group_name : '';
+        const groupTotal = index === 0 ? groupTotalProduction : '';
+  
+        return `${groupName},${machine.machine_name || 'N/A'},${productionCounts},${totalProduction}${groupTotal ? `,${groupTotal}` : ''}`;
+      });
+    }).join('\n');
+  
+    return header + rows;
   };
 
   return (
@@ -361,6 +441,25 @@ export default function DownloadScreen() {
           style={styles.datePicker}
         />
       )}
+      <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={styles.datePickerButton}
+          onPress={toggleFormatDropdown}
+        >
+          <Text style={styles.datePickerText}>{selectedFormat}</Text>
+          <Icon name="caret-down" size={20} color="white" style={styles.calendarIcon} />
+        </TouchableOpacity>
+        {showFormatDropdown && (
+          <View style={styles.dropdownContainer1}>
+            <TouchableOpacity onPress={() => handleFormatDropdownSelect('PDF')}>
+              <Text style={styles.dropdownItem1}>PDF</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleFormatDropdownSelect('CSV')}>
+              <Text style={styles.dropdownItem1}>CSV</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
       <View style={{ height: 100 }}></View>
       <View style={styles.buttonContainer}>
         <Button
@@ -375,7 +474,7 @@ export default function DownloadScreen() {
           title="SHIFT WISE REPORT"
           icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
           buttonStyle={styles.button}
-          onPress={fetchDataAndGeneratePDF}
+          onPress={fetchDataAndGenerateReport}
           loading={loadingShiftWise}
         />
       </View>
@@ -437,13 +536,34 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     zIndex: 1,
   },
+  dropdownContainer1: {
+    position: 'absolute',
+    width: '50%',
+    maxHeight: 200,
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    zIndex: 1,
+  },
   dropdownItem: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     alignItems: 'center'
   },
+  dropdownItem1: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    alignItems: 'right',
+    textAlign: 'center',
+  },
   inputContainer: {
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 20,
