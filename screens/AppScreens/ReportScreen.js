@@ -282,7 +282,7 @@ const ReportScreen = () => {
             testID="dateTimePicker"
             value={selectedDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
             onChange={handleDateChange}
             style={styles.datePicker}
           />

@@ -193,7 +193,7 @@ const ProductionScreen = () => {
   );
 
   const handleDateChange = (event, date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(false);
     if (date) {
       setSelectedDate(date);
       setSearchDate(date);
@@ -230,7 +230,7 @@ const ProductionScreen = () => {
             testID="dateTimePicker"
             value={selectedDate || new Date()}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
             onChange={handleDateChange}
             style={styles.datePicker}
           />
