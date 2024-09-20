@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   datePicker: {
-    width: 100,
+    width: 250,
     marginTop: 10,
   },
   whiteContainer: {

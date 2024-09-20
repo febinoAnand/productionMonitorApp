@@ -227,10 +227,12 @@ const ProductionScreen = () => {
         </View>
         {showDatePicker && (
           <DateTimePicker
+            testID="dateTimePicker"
             value={selectedDate || new Date()}
             mode="date"
-            display="default"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handleDateChange}
+            style={styles.datePicker}
           />
         )}
         <View style={{ height: 20 }}></View>
@@ -418,6 +420,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5.84,
     elevation: 8,
+  },
+  datePicker: {
+    width: 250,
+    marginTop: 10,
   },
   tableHeader: {
     flex: 1,

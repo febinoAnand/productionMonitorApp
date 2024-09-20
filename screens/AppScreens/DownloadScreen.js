@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   datePicker: {
-    width: 100,
+    width: 250,
     marginTop: 10,
   },
   modalOverlay: {
