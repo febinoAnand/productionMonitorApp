@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity,Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -13,7 +13,6 @@ import { BaseURL } from '../../config/appconfig';
 import NetInfo from '@react-native-community/netinfo';
 
 export default function DownloadScreen() {
-  const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -22,8 +21,8 @@ export default function DownloadScreen() {
   const [loadingShiftWise, setLoadingShiftWise] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [selectedFormat, setSelectedFormat] = useState('PDF');
-  const [showFormatDropdown, setShowFormatDropdown] = useState(false);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showFormatModal, setShowFormatModal] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -211,12 +210,20 @@ const generateShiftWiseReportCsv = (data) => {
   const shifts = data.shifts || [];
   const header = 'Shifts,Time Range,Production Count,Target Count,Difference\n';
   const rows = shifts.flatMap(shift => {
-      const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
-      return Object.entries(shift.timing).map(([time, [productionCount, targetCount]], index) => 
-          index === 0
-          ? `${shiftName},${time},${productionCount},${targetCount},${productionCount - targetCount}`
-          : `,${time},${productionCount},${targetCount},${productionCount - targetCount}`
-      );
+    const timingEntries = Object.entries(shift.timing);
+    if (timingEntries.length === 0) return [];  
+    const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
+    const shiftRows = timingEntries.map(([time, [productionCount, targetCount]], index) => 
+      index === 0
+      ? `${shiftName},${time},${productionCount},${targetCount},${productionCount - targetCount}`
+      : `,${time},${productionCount},${targetCount},${productionCount - targetCount}`
+    );
+    const totalProduction = timingEntries.reduce((sum, [, [productionCount]] ) => sum + productionCount, 0);
+    const totalTarget = timingEntries.reduce((sum, [, [, targetCount]] ) => sum + targetCount, 0);
+    const totalDifference = totalProduction - totalTarget;
+    const totalRow = `Total for ${shiftName},,${totalProduction},${totalTarget},${totalDifference}`;
+    
+    return [...shiftRows, totalRow];
   }).join('\n');
   
   return header + rows;
@@ -224,24 +231,22 @@ const generateShiftWiseReportCsv = (data) => {
 
   const handleDropdownSelect = (option) => {
     setSelectedOption(option);
-    setShowDropdown(false);
-    setSelectedMachine(option.value);
-    setDropdownVisible(false);
+    setModalVisible(false);
   };
 
   const toggleDropdown = () => {
-    // setShowDropdown(!showDropdown);
-    setDropdownVisible(!dropdownVisible);
+    setModalVisible(!modalVisible);
   };
 
   const handleFormatDropdownSelect = (format) => {
     setSelectedFormat(format);
-    setShowFormatDropdown(false);
+    setShowFormatModal(false);
   };
 
   const toggleFormatDropdown = () => {
-    setShowFormatDropdown(!showFormatDropdown);
+    setShowFormatModal(!showFormatModal);
   };
+
 
   const handleDateChange = (event, date) => {
     setShowDatePicker(false);
@@ -421,50 +426,36 @@ const generateShiftWiseReportCsv = (data) => {
           <Text style={styles.datePickerText}>{selectedOption ? selectedOption.label : 'Select Machine'}</Text>
           <Icon name="caret-down" size={20} color="white" style={styles.calendarIcon} />
         </TouchableOpacity>
-        {dropdownVisible && (
-              <Modal
-                transparent={true}
-                animationType="slide"
-                visible={dropdownVisible}
-                onRequestClose={toggleDropdown}
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={modalVisible}
+          onRequestClose={toggleDropdown}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Machine</Text>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={false}
               >
-                <View style={styles.modalOverlay}>
-                  <View style={styles.dropdownContainer}>
-                    <ScrollView
-                      keyboardShouldPersistTaps="handled"
-                      nestedScrollEnabled={true}
-                      showsVerticalScrollIndicator={false}
-                    >
-                      {dropdownOptions.map((option, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={styles.dropdownItem}
-                          onPress={() => handleDropdownSelect(option)}
-                        >
-                          <Text>{option.label}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                    <TouchableOpacity onPress={toggleDropdown} style={styles.closeButton}>
-                      <Text style={styles.closeButtonText}>Close</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </Modal>
-            )}
-        {/* {showDropdown && (
-          <ScrollView style={styles.dropdownContainer}>
-            {dropdownOptions.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.dropdownItem}
-                onPress={() => handleDropdownSelect(option)}
-              >
-                <Text>{option.label}</Text>
+              {dropdownOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.dropdownItem}
+                  onPress={() => handleDropdownSelect(option)}
+                >
+                  <Text>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+              </ScrollView>
+              <TouchableOpacity onPress={toggleDropdown} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )} */}
+            </View>
+          </View>
+        </Modal>
         <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
           <Text style={styles.datePickerText}>{selectedDate.toDateString()}</Text>
           <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
@@ -472,32 +463,36 @@ const generateShiftWiseReportCsv = (data) => {
       </View>
       {showDatePicker && (
         <DateTimePicker
+          testID="dateTimePicker"
           value={selectedDate}
           mode="date"
-          display="default"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
           style={styles.datePicker}
         />
       )}
       <View style={styles.inputContainer}>
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={toggleFormatDropdown}
-        >
+      <TouchableOpacity style={styles.datePickerButton} onPress={toggleFormatDropdown}>
           <Text style={styles.datePickerText}>{selectedFormat}</Text>
           <Icon name="caret-down" size={20} color="white" style={styles.calendarIcon} />
         </TouchableOpacity>
-        {showFormatDropdown && (
-          <View style={styles.dropdownContainer1}>
-            <TouchableOpacity onPress={() => handleFormatDropdownSelect('PDF')}>
-              <Text style={styles.dropdownItem1}>PDF</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleFormatDropdownSelect('CSV')}>
-              <Text style={styles.dropdownItem1}>CSV</Text>
-            </TouchableOpacity>
+        <Modal transparent={true} animationType="slide" visible={showFormatModal} onRequestClose={toggleFormatDropdown}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent1}>
+              <Text style={styles.modalTitle}>Select Format</Text>
+              <TouchableOpacity style={styles.dropdownItem} onPress={() => handleFormatDropdownSelect('PDF')}>
+                <Text>PDF</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dropdownItem} onPress={() => handleFormatDropdownSelect('CSV')}>
+                <Text>CSV</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleFormatDropdown} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        )}
-      </View>
+        </Modal>
+        </View>
       <View style={{ height: 100 }}></View>
       <View style={styles.buttonContainer}>
         <Button
@@ -616,14 +611,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    alignItems: 'center'
-  },
-  dropdownItem1: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    alignItems: 'right',
-    textAlign: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f1f1f1',
   },
   inputContainer: {
     position: 'relative',
@@ -649,5 +638,40 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginTop: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 350,
+    height: 500,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalContent1: {
+    width: 250,
+    height: 200,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  closeButton: {
+    marginTop: 10,
+    alignSelf: 'center',
+    padding: 10,
+    backgroundColor: '#59adff',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

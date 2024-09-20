@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -246,6 +246,7 @@ const ReportScreen = () => {
               >
                 <View style={styles.modalOverlay}>
                   <View style={styles.dropdownContainer}>
+                  <Text style={styles.modalTitle}>Select Machine</Text>
                     <ScrollView
                       keyboardShouldPersistTaps="handled"
                       nestedScrollEnabled={true}
@@ -278,9 +279,10 @@ const ReportScreen = () => {
         </View>
         {showDatePicker && (
           <DatePicker
+            testID="dateTimePicker"
             value={selectedDate}
             mode="date"
-            display="default"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handleDateChange}
             style={styles.datePicker}
           />
@@ -523,15 +525,14 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     width: 350,
     height: 500,
-    backgroundColor: '#f1f1f1',
+    backgroundColor: 'white',
     borderRadius: 10,
     padding: 10,
     elevation: 5,
   },
-  dropdownItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 15,
   },
   closeButton: {
     marginTop: 10,
@@ -548,7 +549,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: '#f1f1f1',
   },
   scrollView: {
     maxHeight: 300,
