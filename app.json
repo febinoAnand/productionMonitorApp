@@ -2,7 +2,7 @@
   "expo": {
     "name": "Productionmonitor App",
     "slug": "productionmonitor",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/AppMando.png",
     "userInterfaceStyle": "light",
@@ -12,14 +12,20 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hlmando.productionmonitor",
+      "buildNumber": "1.0.1" 
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/AppMando.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.richianand1990.productionmonitor"
+      "package": "com.hlmando.productionmonitor",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"

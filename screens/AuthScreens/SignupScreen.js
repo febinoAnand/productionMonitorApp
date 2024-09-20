@@ -122,7 +122,7 @@ export default function Signup({ navigation }) {
     const navigateToLogin = async () => {
         try {
             await SecureStore.setItemAsync('deviceID', '14844490-da5d-4c67-9f4d-3dd4b0cb2294');
-            await AsyncStorage.setItem('emailID', 'demo');
+            await AsyncStorage.setItem('emailID', 'demo@demo.com');
             navigation.navigate('Login');
         } catch (error) {
             console.error('Error storing data or navigating:', error);
@@ -138,7 +138,7 @@ export default function Signup({ navigation }) {
             if (!isConnected) return;
             const isEmailValid = validateEmail(email);
             const isMobileValid = validateMobile(mobileNo);
-            if (!isEmailValid || !isMobileValid) {
+            if (!isEmailValid || !isMobileValid || email == "demo@demo.com") {
                 setShowValidAlert(true);
                 return;
             }

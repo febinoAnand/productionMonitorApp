@@ -32,6 +32,7 @@ export default function Login({ navigation }) {
     const [expoID, setExpoID] = useState("");
     const [notificationID,setNotificationID] = useState("");
     const [deviceMismatchAlert,setDeviceMismatchAlert] = useState(false);
+    const [forDemoUser,setForDemoUser] = useState(false);
 
     const clearDatas = async ()=>{
         await SecureStore.setItemAsync('authState', '0');
@@ -62,9 +63,11 @@ export default function Login({ navigation }) {
         const emailID = await AsyncStorage.getItem("emailID");
         const demoDeviceID = '14844490-da5d-4c67-9f4d-3dd4b0cb2294';
 
-        if (emailID === 'demo@ifm.com') {
+        if (emailID === 'demo@demo.com') {
             setDeviceID(demoDeviceID);
+            setForDemoUser(true);
         } else {
+            setForDemoUser(false);
             setDeviceID(await SecureStore.getItemAsync("deviceID"));
         }
     
@@ -132,6 +135,10 @@ export default function Login({ navigation }) {
       
         return token;
       }
+
+    const handBack = () =>{
+        navigation.goBack(null);
+    }
 
     const handleLogin = () => {
         if (!username.trim() || !password.trim()) {
@@ -259,6 +266,15 @@ export default function Login({ navigation }) {
                       buttonStyle={styles.button}
                       disabled={isLoading}
                     />
+                    <View style={{ height: 20 }}></View>
+                    {forDemoUser && 
+                    <Button
+                      title="Back"
+                      onPress={handBack}
+                      buttonStyle={styles.button}
+                      disabled={isLoading}
+                    />
+                    }
                     <CustomAlert
                         visible={showConnectAlert}
                         onClose={() => setShowConnectAlert(false)}

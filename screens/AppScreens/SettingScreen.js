@@ -17,6 +17,7 @@ export default function Settings({ navigation }) {
     const [email, setEmail] = useState('');
     const [designation, setDesignation] = useState('');
     const [mobileNo, setMobileNo] = useState('');
+    const [onlyForUsers,setOnlyForUsers] = useState(true);
 
     useEffect(() => {
         getIDs();
@@ -35,6 +36,14 @@ export default function Settings({ navigation }) {
         setEmail(await AsyncStorage.getItem('emailID') || '');
         setDesignation(await AsyncStorage.getItem('designation') || '');
         setMobileNo(await AsyncStorage.getItem('mobileNo') || '');
+
+        if(email === "demo@demo.com"){
+
+            setOnlyForUsers(false);
+        }
+        else{
+            setOnlyForUsers(true);
+        }
     }
 
     const handleLogout = async () => {
@@ -86,7 +95,7 @@ export default function Settings({ navigation }) {
         try {
             const username = await AsyncStorage.getItem('username');
     
-            if (username === 'demo@ifm.com') {
+            if (username === 'demo@demo.com') {
                 navigation.replace("SignUp");
                 return;
             }
@@ -172,12 +181,15 @@ export default function Settings({ navigation }) {
                     buttonStyle={styles.logoutButton}
                 />
             </View>
-            <View style={styles.logoutButtonContainer}>
+            <View style={styles.logoutButtonContainer} >
+            { onlyForUsers && 
                 <Button
+                    visible={onlyForUsers}
                     title="Reset User"
                     buttonStyle={styles.logoutButton}
                     onPress={handleResetUser}
                 />
+            }
             </View>
             <CustomAlert
                 visible={showValidAlert}
