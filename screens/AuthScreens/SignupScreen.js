@@ -122,7 +122,7 @@ export default function Signup({ navigation }) {
     const navigateToLogin = async () => {
         try {
             await SecureStore.setItemAsync('deviceID', '14844490-da5d-4c67-9f4d-3dd4b0cb2294');
-            await AsyncStorage.setItem('emailID', 'demo@ifm.com');
+            await AsyncStorage.setItem('emailID', 'demo');
             navigation.navigate('Login');
         } catch (error) {
             console.error('Error storing data or navigating:', error);

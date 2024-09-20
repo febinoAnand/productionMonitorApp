@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -85,6 +85,7 @@ const ReportScreen = () => {
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [searchResults, setSearchResults] = useState(hardCodedShifts);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   const navigation = useNavigation();
 
   const checkToken = async () => {
@@ -150,13 +151,13 @@ const ReportScreen = () => {
   };
 
   const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    setDropdownVisible(!dropdownVisible);
   };
 
   const handleDropdownSelect = (option) => {
     setSelectedOption(option);
     setSelectedMachine(option.value);
-    setShowDropdown(false);
+    setDropdownVisible(false);
   };
 
   const handleSearch = async () => {
@@ -229,26 +230,44 @@ const ReportScreen = () => {
       <View style={styles.container}>
         <View style={{ height: 20 }}></View>
         <View style={styles.inputContainer}>
-          <TouchableOpacity
-            style={styles.datePickerButton}
-            onPress={toggleDropdown}
-          >
-            <Text style={styles.datePickerText}>{selectedOption ? selectedOption.label : 'Select Machine'}</Text>
-            <Icon name="caret-down" size={16} color="white" style={styles.calendarIcon} />
-          </TouchableOpacity>
-          {showDropdown && (
-            <View style={styles.dropdownContainer}>
-              {dropdownOptions.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.dropdownItem}
-                  onPress={() => handleDropdownSelect(option)}
-                >
-                  <Text>{option.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+            <TouchableOpacity
+              style={styles.datePickerButton}
+              onPress={toggleDropdown}
+            >
+              <Text style={styles.datePickerText}>{selectedOption ? selectedOption.label : 'Select Machine'}</Text>
+              <Icon name="caret-down" size={16} color="white" style={styles.calendarIcon} />
+            </TouchableOpacity>
+            {dropdownVisible && (
+              <Modal
+                transparent={true}
+                animationType="slide"
+                visible={dropdownVisible}
+                onRequestClose={toggleDropdown}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.dropdownContainer}>
+                    <ScrollView
+                      keyboardShouldPersistTaps="handled"
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {dropdownOptions.map((option, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.dropdownItem}
+                          onPress={() => handleDropdownSelect(option)}
+                        >
+                          <Text>{option.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                    <TouchableOpacity onPress={toggleDropdown} style={styles.closeButton}>
+                      <Text style={styles.closeButtonText}>Close</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            )}
           <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
             <Text style={styles.datePickerText}>{selectedDate.toDateString()}</Text>
             <Icon name="calendar" size={16} color="white" style={styles.calendarIcon} />
@@ -491,21 +510,48 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
+  dropdownWrapper: {
+    flexDirection: 'column',
+    width: '50%',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   dropdownContainer: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    zIndex: 1,
+    width: 350,
+    height: 500,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 10,
+    padding: 10,
+    elevation: 5,
   },
   dropdownItem: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+  closeButton: {
+    marginTop: 10,
+    alignSelf: 'center',
+    padding: 10,
+    backgroundColor: '#59adff',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    alignItems: 'center'
+  },
+  scrollView: {
+    maxHeight: 300,
   },
 });
 
