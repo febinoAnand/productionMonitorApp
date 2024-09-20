@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity,Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -20,8 +20,10 @@ export default function DownloadScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingShiftWise, setLoadingShiftWise] = useState(false);
+  const [selectedMachine, setSelectedMachine] = useState(null);
   const [selectedFormat, setSelectedFormat] = useState('PDF');
   const [showFormatDropdown, setShowFormatDropdown] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -72,6 +74,8 @@ export default function DownloadScreen() {
       Alert.alert('Error', 'Failed to fetch dropdown options.');
     }
   };
+
+  
 
   const fetchDataAndGenerateReport = async () => {
     if (!selectedOption || !selectedDate) {
@@ -221,10 +225,13 @@ const generateShiftWiseReportCsv = (data) => {
   const handleDropdownSelect = (option) => {
     setSelectedOption(option);
     setShowDropdown(false);
+    setSelectedMachine(option.value);
+    setDropdownVisible(false);
   };
 
   const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    // setShowDropdown(!showDropdown);
+    setDropdownVisible(!dropdownVisible);
   };
 
   const handleFormatDropdownSelect = (format) => {
@@ -414,7 +421,38 @@ const generateShiftWiseReportCsv = (data) => {
           <Text style={styles.datePickerText}>{selectedOption ? selectedOption.label : 'Select Machine'}</Text>
           <Icon name="caret-down" size={20} color="white" style={styles.calendarIcon} />
         </TouchableOpacity>
-        {showDropdown && (
+        {dropdownVisible && (
+              <Modal
+                transparent={true}
+                animationType="slide"
+                visible={dropdownVisible}
+                onRequestClose={toggleDropdown}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.dropdownContainer}>
+                    <ScrollView
+                      keyboardShouldPersistTaps="handled"
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {dropdownOptions.map((option, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.dropdownItem}
+                          onPress={() => handleDropdownSelect(option)}
+                        >
+                          <Text>{option.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                    <TouchableOpacity onPress={toggleDropdown} style={styles.closeButton}>
+                      <Text style={styles.closeButtonText}>Close</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            )}
+        {/* {showDropdown && (
           <ScrollView style={styles.dropdownContainer}>
             {dropdownOptions.map((option, index) => (
               <TouchableOpacity
@@ -426,7 +464,7 @@ const generateShiftWiseReportCsv = (data) => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-        )}
+        )} */}
         <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
           <Text style={styles.datePickerText}>{selectedDate.toDateString()}</Text>
           <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
@@ -515,6 +553,12 @@ const styles = StyleSheet.create({
     width: 100,
     marginTop: 10,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   iconButton: {
     backgroundColor: '#59adff',
     padding: 10,
@@ -524,18 +568,37 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   dropdownContainer: {
-    position: 'absolute',
-    width: '60%',
-    maxHeight: 200,
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    zIndex: 1,
+    width: 350,
+    height: 500,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 10,
+    padding: 10,
+    elevation: 5,
   },
+  closeButton: {
+    marginTop: 10,
+    alignSelf: 'center',
+    padding: 10,
+    backgroundColor: '#59adff',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  // dropdownContainer: {
+  //   position: 'absolute',
+  //   width: '60%',
+  //   maxHeight: 200,
+  //   top: '100%',
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: 'white',
+  //   borderWidth: 1,
+  //   borderColor: '#ccc',
+  //   borderRadius: 5,
+  //   zIndex: 1,
+  // },
   dropdownContainer1: {
     position: 'absolute',
     width: '50%',

@@ -21,6 +21,7 @@ export default function Settings({ navigation }) {
 
     useEffect(() => {
         getIDs();
+
         const unsubscribe = NetInfo.addEventListener(state => {
             setIsConnected(state.isConnected);
         });
@@ -31,17 +32,29 @@ export default function Settings({ navigation }) {
     }, []);
 
     const getIDs = async () => {
-        setDeviceID(await SecureStore.getItemAsync("deviceID"));
-        setName(await AsyncStorage.getItem('name') || '');
-        setEmail(await AsyncStorage.getItem('emailID') || '');
-        setDesignation(await AsyncStorage.getItem('designation') || '');
-        setMobileNo(await AsyncStorage.getItem('mobileNo') || '');
-
-        if(email === "demo@demo.com"){
+        
+        // setEmail(await AsyncStorage.getItem('emailID') || '');
+        // setDeviceID(await SecureStore.getItemAsync("deviceID"));
+        // setName(await AsyncStorage.getItem('name') || '');
+        // setDesignation(await AsyncStorage.getItem('designation') || '');
+        // setMobileNo(await AsyncStorage.getItem('mobileNo') || '');
+        
+        if(await AsyncStorage.getItem('emailID') === "demo@demo.com"){
+            console.log("demo user")
+            setDeviceID("demo");
+            setName("demo");
+            setEmail(await AsyncStorage.getItem('emailID') || '');
+            setDesignation("demo");
+            setMobileNo("1234567890");
 
             setOnlyForUsers(false);
         }
         else{
+            setDeviceID(await SecureStore.getItemAsync("deviceID"));
+            setName(await AsyncStorage.getItem('name') || '');
+            setEmail(await AsyncStorage.getItem('emailID') || '');
+            setDesignation(await AsyncStorage.getItem('designation') || '');
+            setMobileNo(await AsyncStorage.getItem('mobileNo') || '');
             setOnlyForUsers(true);
         }
     }
@@ -184,7 +197,6 @@ export default function Settings({ navigation }) {
             <View style={styles.logoutButtonContainer} >
             { onlyForUsers && 
                 <Button
-                    visible={onlyForUsers}
                     title="Reset User"
                     buttonStyle={styles.logoutButton}
                     onPress={handleResetUser}
