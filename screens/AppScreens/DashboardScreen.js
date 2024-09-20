@@ -51,7 +51,7 @@ const DashboardScreen = () => {
       });
   
       const responseData = response.data;
-      console.log("responce :",response.data)
+      // console.log("responce :",response.data)
       if (responseData && Array.isArray(responseData.groups)) {
         const updatedGroups = responseData.groups.map(group => ({
           ...group,
@@ -129,7 +129,7 @@ const DashboardScreen = () => {
   );
 
   const handleSquarePress = (machine) => {
-    console.log('Selected Machine ID:', machine.machine_id);
+    // console.log('Selected Machine ID:', machine.machine_id);
     navigation.navigate('WORK CENTER', { id: machine.machine_id });
   };
 

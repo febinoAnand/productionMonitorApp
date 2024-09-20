@@ -66,7 +66,7 @@ const LiveReportScreen = () => {
         machine_id: id,
       });
       const data = response.data;
-      console.log('API Response:', data);
+      // console.log('API Response:', data);
 
       if (data && data.machine_id === id) {
         setMachineDetails(data);
@@ -89,17 +89,17 @@ const LiveReportScreen = () => {
   };
 
   const startFetchingData = useCallback(() => {
-    console.log('Starting data fetch interval');
+    // console.log('Starting data fetch interval');
     fetchData();
     intervalRef.current = setInterval(() => {
-      console.log('Fetching data...');
+      // console.log('Fetching data...');
       fetchData();
     }, 20000);
   }, [id]);
 
   const stopFetchingData = useCallback(() => {
     if (intervalRef.current) {
-      console.log('Stopping data fetch interval');
+      // console.log('Stopping data fetch interval');
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }

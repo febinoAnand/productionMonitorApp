@@ -40,7 +40,7 @@ export default function Settings({ navigation }) {
         // setMobileNo(await AsyncStorage.getItem('mobileNo') || '');
         
         if(await AsyncStorage.getItem('emailID') === "demo@demo.com"){
-            console.log("demo user")
+            // console.log("demo user")
             setDeviceID("demo");
             setName("demo");
             setEmail(await AsyncStorage.getItem('emailID') || '');
@@ -72,7 +72,7 @@ export default function Settings({ navigation }) {
                 return;
             }
 
-            console.log('Authorization:', `Token ${token}`);
+            // console.log('Authorization:', `Token ${token}`);
             const url = `${BaseURL}Userauth/userlogout/`;
 
             const response = await fetch(url, {

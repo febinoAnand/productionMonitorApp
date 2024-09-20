@@ -92,7 +92,7 @@ export default function DownloadScreen() {
       }, {
         headers: { Authorization: `Token ${token}` }
       });
-      console.log('API Response:', response.data);
+      // console.log('API Response:', response.data);
       const data = response.data;
 
       if (selectedFormat === 'PDF') {
@@ -268,7 +268,7 @@ const generateShiftWiseReportCsv = (data) => {
       }, {
         headers: { Authorization: `Token ${token}` }
       });
-      console.log('API Response:', response.data);
+      // console.log('API Response:', response.data);
       const data = response.data;
 
       if (selectedFormat === 'PDF') {

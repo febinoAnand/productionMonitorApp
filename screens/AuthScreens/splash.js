@@ -66,7 +66,7 @@ export default function Splash({ route, navigation }) {
 
     const getUserExpiryTime = async () =>{
         user_expiry_time = await AsyncStorage.getItem("expiry_time");
-        console.log(user_expiry_time)
+        // console.log(user_expiry_time)
         try{
             user_expiry_time = parseInt(user_expiry_time)
         }

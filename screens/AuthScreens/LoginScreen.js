@@ -170,14 +170,14 @@ export default function Login({ navigation }) {
                     setIsLoading(false);
                     const responseData = await response.json();
                     const { status, message, token, user_expiry_time } = responseData;
-                    console.log(responseData);
+                    // console.log(responseData);
                     if (status === "OK") {
                         await AsyncStorage.setItem('token', token);
                         await SecureStore.setItemAsync('authState', '2');
                         const currentTime = format(new Date(),timeFormat);
                         await AsyncStorage.setItem('loggedinat', currentTime);
                         await AsyncStorage.setItem('expiry_time', ""+user_expiry_time);
-                        console.log("expire time ==>",user_expiry_time)
+                        // console.log("expire time ==>",user_expiry_time)
                             navigation.replace("TabScreen");
                     }
                     else if(status === "INVALID"){

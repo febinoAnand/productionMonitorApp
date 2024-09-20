@@ -162,7 +162,7 @@ const ReportScreen = () => {
 
   const handleSearch = async () => {
     if (!selectedMachine || !selectedDate) {
-      console.log('Please select both machine and date');
+      // console.log('Please select both machine and date');
       return;
     }
   

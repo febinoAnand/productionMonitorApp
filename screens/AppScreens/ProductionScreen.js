@@ -47,7 +47,7 @@ const ProductionScreen = () => {
     ws.onmessage = (event) => {
       try {
         const receivedData = JSON.parse(event.data);
-        console.log('Received WebSocket data:', receivedData);
+        // console.log('Received WebSocket data:', receivedData);
     
         const selectedDateFormatted = selectedDateRef.current
           ? selectedDateRef.current.toISOString().split('T')[0]
@@ -57,7 +57,7 @@ const ProductionScreen = () => {
           : null;
     
         if (receivedDate && receivedDate === selectedDateFormatted) {
-          console.log('Date matches, updating data.');
+          // console.log('Date matches, updating data.');
           const productionData = receivedData.machine_groups || [];
           const filteredData = productionData
             .map(group => ({
@@ -74,7 +74,7 @@ const ProductionScreen = () => {
           const shifts = firstMachineShifts
             .filter(shift => shift.shift_name || shift.shift_no)
             .map(shift => shift.shift_name || `Shift-${shift.shift_no}`);
-          console.log('Updating shift headers:', [...new Set(shifts)]);
+          // console.log('Updating shift headers:', [...new Set(shifts)]);
           setShiftHeaders([...new Set(shifts)]);
           setProductionData(reversedGroups);
         } else {
@@ -165,7 +165,7 @@ const ProductionScreen = () => {
         }))
         .filter(group => group.machines.length > 0);
 
-      console.log('Filtered Production Data from API:', filteredData);
+      // console.log('Filtered Production Data from API:', filteredData);
 
       setProductionData(filteredData.reverse());
 
