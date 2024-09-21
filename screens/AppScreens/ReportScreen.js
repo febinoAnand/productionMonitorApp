@@ -284,7 +284,7 @@ const ReportScreen = () => {
             animationType="slide"
             onRequestClose={() => setShowDatePicker(false)}
           >
-            <View style={styles.modalOverlay}>
+            <View style={styles.modalOverlay1}>
               <View style={styles.modalContent}>
                 <DatePicker
                   testID="dateTimePicker"
@@ -298,7 +298,7 @@ const ReportScreen = () => {
                   onPress={() => setShowDatePicker(false)}
                   style={styles.closeButton}
                 >
-                  <Text style={styles.closeButtonText}>Done</Text>
+                  <Text style={styles.closeButtonText}>Close</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -547,6 +547,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalOverlay1: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    // alignItems: 'center',
   },
   dropdownContainer: {
     width: 350,

@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   iconButton: {
     backgroundColor: '#59adff',
