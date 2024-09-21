@@ -142,11 +142,9 @@ const ReportScreen = () => {
   }, []);
 
   const handleDateChange = (event, date) => {
+    setShowDatePicker(false);
     if (date !== undefined) {
       setSelectedDate(date);
-      setShowDatePicker(false);
-    } else {
-      setShowDatePicker(false);
     }
   };
 
