@@ -227,7 +227,7 @@ const LiveReportScreen = () => {
                       <Text style={styles.headerText2}>Date</Text>
                     </View>
                     <View style={[styles.cell1, styles.columnValue1]}>
-                      <Text style={styles.valueText}>{getTodayDate()}</Text>
+                      <Text style={styles.valueText}>{machineDetails && machineDetails.date ? machineDetails.date : 'N/A'}</Text>
                     </View>
                   </View>
                 </>
