@@ -277,14 +277,40 @@ const ReportScreen = () => {
             <Icon name="search" size={16} color="white" />
           </TouchableOpacity>
         </View>
-        {showDatePicker && (
+        {Platform.OS === 'ios' && (
+          <Modal
+            transparent={true}
+            visible={showDatePicker}
+            animationType="slide"
+            onRequestClose={() => setShowDatePicker(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <DatePicker
+                  testID="dateTimePicker"
+                  value={selectedDate}
+                  mode="date"
+                  display="inline"
+                  onChange={handleDateChange}
+                  style={styles.datePicker}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(false)}
+                  style={styles.closeButton}
+                >
+                  <Text style={styles.closeButtonText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
+        {Platform.OS === 'android' && showDatePicker && (
           <DatePicker
             testID="dateTimePicker"
             value={selectedDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            display="default"
             onChange={handleDateChange}
-            style={styles.datePicker}
           />
         )}
         {searchResults.length === 0 ? (
@@ -544,6 +570,13 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    alignItems: 'center',
   },
   dropdownItem: {
     padding: 10,
