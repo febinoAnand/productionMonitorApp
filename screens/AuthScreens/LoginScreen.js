@@ -138,7 +138,7 @@ export default function Login({ navigation }) {
       }
 
     const handBack = () =>{
-        navigation.goBack(null);
+        navigation.replace('SignUp');
     }
 
     const handleLogin = () => {
@@ -276,7 +276,7 @@ export default function Login({ navigation }) {
                     <View style={{ height: 20 }}></View>
                     {forDemoUser && 
                     <Button
-                      title="Back"
+                      title="Sign Up"
                       onPress={handBack}
                       buttonStyle={styles.button}
                       disabled={isLoading}
