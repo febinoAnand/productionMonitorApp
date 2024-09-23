@@ -30,7 +30,7 @@ const ProductionScreen = () => {
       if (!isTokenValid) {
         const networkState = await NetInfo.fetch();
         if (networkState.isConnected) {
-          navigation.navigate('Login');
+          navigation.replace('Login');
         }
         return;
       }
@@ -129,7 +129,7 @@ const ProductionScreen = () => {
     if (!isTokenValid) {
       const networkState = await NetInfo.fetch();
       if (networkState.isConnected) {
-        navigation.navigate('Login');
+        navigation.replace('Login');
       }
       return;
     }

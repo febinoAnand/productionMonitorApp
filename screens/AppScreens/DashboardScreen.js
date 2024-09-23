@@ -40,7 +40,7 @@ const DashboardScreen = () => {
     if (!isTokenValid) {
       const networkState = await NetInfo.fetch();
       if (networkState.isConnected) {
-        navigation.navigate('Login');
+        navigation.replace('Login');
       }
       return;
     }
@@ -130,7 +130,7 @@ const DashboardScreen = () => {
 
   const handleSquarePress = (machine) => {
     // console.log('Selected Machine ID:', machine.machine_id);
-    navigation.navigate('WORK CENTER', { id: machine.machine_id });
+    navigation.replace('WORK CENTER', { id: machine.machine_id });
   };
 
   const getSquareBackgroundColor = (production_count, target_production) => {
