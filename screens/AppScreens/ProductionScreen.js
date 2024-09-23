@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     height: 40
   },
   columnHeader: {
-    backgroundColor: 'dodgerblue',
+    backgroundColor: '#59adff',
     height: 50
   },
   grayCell: {
