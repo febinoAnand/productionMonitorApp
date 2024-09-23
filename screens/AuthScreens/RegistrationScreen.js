@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Image, StyleSheet, ScrollView, Platform } from "react-native";
+import { View, TextInput, Image, StyleSheet, ScrollView, Platform, TouchableOpacity } from "react-native";
 import { SimpleLineIcons, FontAwesome5, Feather, MaterialIcons } from '@expo/vector-icons';
 import LoadingScreen from './screenloading';
 import CustomAlert from './customalert';
@@ -31,6 +31,8 @@ export default function Registration({ navigation }) {
     const [designation, setDesignation] = useState('');
     const [showPopmessage, setShowPopmessage] = useState(false);
     const [showMessagePrompt,setShowMessagePrompt] = useState("")
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const changeNavigation = async ()=>{
        await navigation.replace("Login");
@@ -236,9 +238,15 @@ export default function Registration({ navigation }) {
                                 style={styles.textInput}
                                 placeholder='Password'
                                 autoCapitalize="none"
-                                secureTextEntry={true}
+                                secureTextEntry={!showPassword}
                                 onChangeText={text => setPassword(text)} 
                             />
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                style={styles.eyeIcon}
+                            >
+                                <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#59adff" />
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.inputContainer}>
                             <Feather name="unlock" size={20} color="#59adff" style={styles.icon} />
@@ -246,9 +254,15 @@ export default function Registration({ navigation }) {
                                 style={styles.textInput}
                                 placeholder='Confirm Password'
                                 autoCapitalize="none" 
-                                secureTextEntry={true}
+                                secureTextEntry={!showConfirmPassword}
                                 onChangeText={text => setConfirmPassword(text)} 
                             />
+                            <TouchableOpacity
+                                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                style={styles.eyeIcon}
+                            >
+                                <Feather name={showConfirmPassword ? "eye" : "eye-off"} size={20} color="#59adff" />
+                            </TouchableOpacity>
                         </View>
                     </View>
                     <View style={{ height: 20 }}></View>

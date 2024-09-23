@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet,Image,Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, TextInput, StyleSheet,Image,Platform, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
 import { SimpleLineIcons, Feather } from '@expo/vector-icons';
 import { Button } from 'react-native-elements';
 import LoadingScreen from './screenloading';
@@ -33,6 +33,7 @@ export default function Login({ navigation }) {
     const [notificationID,setNotificationID] = useState("");
     const [deviceMismatchAlert,setDeviceMismatchAlert] = useState(false);
     const [forDemoUser,setForDemoUser] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const clearDatas = async ()=>{
         await SecureStore.setItemAsync('authState', '0');
@@ -252,11 +253,17 @@ export default function Login({ navigation }) {
                             <TextInput
                                 style={styles.textInput}
                                 placeholder='Password'
-                                secureTextEntry={true}
+                                secureTextEntry={!showPassword}
                                 autoCapitalize="none"
                                 value={password}
                                 onChangeText={setPassword}
                             />
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                style={styles.eyeIcon}
+                            >
+                                <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#59adff" />
+                            </TouchableOpacity>
                         </View>
                     </View>
                     <View style={{ height: 20 }}></View>
