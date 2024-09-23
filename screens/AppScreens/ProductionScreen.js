@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert, RefreshControl, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
@@ -225,15 +225,40 @@ const ProductionScreen = () => {
             <Icon name="calendar" size={20} color="black" style={styles.calendarIcon} />
           </TouchableOpacity>
         </View>
-        {showDatePicker && (
-          <DateTimePicker
-            testID="dateTimePicker"
-            value={selectedDate || new Date()}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'inline' : 'default'}
-            onChange={handleDateChange}
-            style={styles.datePicker}
-          />
+        {Platform.OS === 'ios' ? (
+          <Modal
+            visible={showDatePicker}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowDatePicker(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={selectedDate || new Date()}
+                  mode="date"
+                  display="inline"
+                  onChange={handleDateChange}
+                  style={styles.datePicker}
+                />
+                <TouchableOpacity onPress={() => setShowDatePicker(false)} style={styles.modalButton}>
+                  <Text style={styles.modalButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          showDatePicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={selectedDate || new Date()}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+              style={styles.datePicker}
+            />
+          )
         )}
         <View style={{ height: 20 }}></View>
         <View style={styles.whiteContainer}>
@@ -488,6 +513,28 @@ const styles = StyleSheet.create({
   },
   totalRow: {
     backgroundColor: '#f6f6f6',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    alignItems: 'center',
+  },
+  modalButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: 'dodgerblue',
+    borderRadius: 5,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

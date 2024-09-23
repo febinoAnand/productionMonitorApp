@@ -25,7 +25,7 @@ export default function Navigation() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TestDashboard" component={TestDashboard} options={{ headerShown: false }} />
         <Stack.Screen name="TabScreen" component={TabGroup} options={{ headerShown: false }} />
-        <Stack.Screen name="WORK CENTER" component={LiveReportScreen} />
+        <Stack.Screen name="WORK CENTER" component={LiveReportScreen} options={{ headerBackTitleVisible: false}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -461,16 +461,42 @@ const generateShiftWiseReportCsv = (data) => {
           <Icon name="calendar" size={20} color="white" style={styles.calendarIcon} />
         </TouchableOpacity>
       </View>
-      {showDatePicker && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={selectedDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'inline' : 'default'}
-          onChange={handleDateChange}
-          style={styles.datePicker}
-        />
-      )}
+      {Platform.OS === 'ios' && (
+          <Modal
+            transparent={true}
+            visible={showDatePicker}
+            animationType="slide"
+            onRequestClose={() => setShowDatePicker(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent2}>
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={selectedDate}
+                  mode="date"
+                  display="inline"
+                  onChange={handleDateChange}
+                  style={styles.datePicker}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(false)}
+                  style={styles.closeButton}
+                >
+                  <Text style={styles.closeButtonText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
+        {Platform.OS === 'android' && showDatePicker && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )}
       <View style={styles.inputContainer}>
       <TouchableOpacity style={styles.datePickerButton} onPress={toggleFormatDropdown}>
           <Text style={styles.datePickerText}>{selectedFormat}</Text>
@@ -552,7 +578,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   iconButton: {
     backgroundColor: '#59adff',
@@ -658,6 +684,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
+  },
+  modalContent2: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
