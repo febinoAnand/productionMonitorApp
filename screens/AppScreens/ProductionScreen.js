@@ -41,7 +41,7 @@ const ProductionScreen = () => {
 
     const ws = new WebSocket(`${BaseURL.replace('https', 'wss')}data/production/`);
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      // console.log('WebSocket connected');
     };
 
     ws.onmessage = (event) => {
@@ -78,7 +78,7 @@ const ProductionScreen = () => {
           setShiftHeaders([...new Set(shifts)]);
           setProductionData(reversedGroups);
         } else {
-          console.log('WebSocket data does not match the selected date.');
+          // console.log('WebSocket data does not match the selected date.');
         }
       } catch (error) {
         console.error('Error handling WebSocket message:', error);
@@ -90,7 +90,7 @@ const ProductionScreen = () => {
     };
 
     ws.onclose = () => {
-      console.log('WebSocket disconnected');
+      // console.log('WebSocket disconnected');
     };
 
     setWebSocket(ws);
