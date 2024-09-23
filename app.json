@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "HL Mando",
+    "name": "HL Mando Production",
     "slug": "productionmonitor",
     "version": "1.0.1",
     "orientation": "portrait",
@@ -16,16 +16,16 @@
         "usesNonExemptEncryption": false
       },
       "supportsTablet": true,
-      "bundleIdentifier": "com.hlmando.productionmonitor",
-      "buildNumber": "1.0.1" 
+      "bundleIdentifier": "com.hlmando.production",
+      "buildNumber": "1.0.2" 
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/AppMando.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.hlmando.productionmonitor",
-      "versionCode": 2
+      "package": "com.hlmando.production",
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/AppMando.png"

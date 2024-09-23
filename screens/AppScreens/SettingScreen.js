@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, Platform } from 'react-native';
 import { Input, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SecureStore from 'expo-secure-store';
@@ -7,6 +7,8 @@ import { App_Token, BaseURL } from '../../config/appconfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../AuthScreens/customalert.js';
 import NetInfo from "@react-native-community/netinfo";
+import Constants from 'expo-constants';
+
 
 export default function Settings({ navigation }) {
     const [showValidAlert, setShowValidAlert] = useState(false);
@@ -173,7 +175,9 @@ export default function Settings({ navigation }) {
             <View style={styles.box}>
                 <Text style={styles.header}>Device</Text>
                 <Input
-                    placeholder="1.0.0"
+                    placeholder={Constants.expoConfig.version +
+                        (Platform.OS === 'ios' ?  " (" + Constants.expoConfig.ios.buildNumber + ")" : " (" + Constants.expoConfig.android.versionCode + ")" )
+                    } 
                     editable={false}
                     selectTextOnFocus={false}
                     leftIcon={<Icon name="mobile" type="font-awesome" size={24} color="#59adff" />}
