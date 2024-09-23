@@ -84,7 +84,7 @@ const DashboardScreen = () => {
     });
 
     websocketRef.current.onopen = () => {
-      console.log('WebSocket connection opened');
+      // console.log('WebSocket connection opened');
     };
 
     websocketRef.current.onmessage = (event) => {
@@ -107,7 +107,7 @@ const DashboardScreen = () => {
     };
 
     websocketRef.current.onclose = () => {
-      console.log('WebSocket connection closed');
+      // console.log('WebSocket connection closed');
     };
   };
 
