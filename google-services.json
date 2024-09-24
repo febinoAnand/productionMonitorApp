@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412411536222",
+    "project_id": "hlmando-production",
+    "storage_bucket": "hlmando-production.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412411536222:android:645c38bda879d4e9dae5cf",
+        "android_client_info": {
+          "package_name": "com.hlmando.production"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvevFVxjL5SqXEZXyNBjinOWDHi3XAa6Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
