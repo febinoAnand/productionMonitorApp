@@ -149,6 +149,12 @@ const DashboardScreen = () => {
     setRefreshing(false);
   }, []);
 
+  const getRectangleColor = (status) => {
+    if (status === 1) return 'red';
+    if (status === 0) return '#6df138';
+    return 'yellow';
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent} 
     refreshControl={ <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
@@ -175,6 +181,7 @@ const DashboardScreen = () => {
                       <Text style={styles.ovalText}>{machine.production_count}</Text>
                       <View style={styles.line} />
                       <Text style={styles.ovalText}>{machine.target_production}</Text>
+                      <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machine.status) }]} />
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -314,6 +321,12 @@ const styles = StyleSheet.create({
     width: 60,
     backgroundColor: 'black',
     marginHorizontal: 5,
+  },
+  redRectangle: {
+    width: 80,
+    height: 10,
+    marginTop: 10,
+    borderRadius: 2,
   },
 });
 
