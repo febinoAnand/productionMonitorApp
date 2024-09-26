@@ -10,9 +10,10 @@ import NetInfo from '@react-native-community/netinfo';
 const LiveReportScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { id } = route.params || {};
+  const { id, status } = route.params || {};
   const [machineDetails, setMachineDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [machineStatus, setMachineStatus] = useState(status);
   const intervalRef = useRef(null);
   const isMounted = useRef(true);
 
@@ -22,6 +23,10 @@ const LiveReportScreen = () => {
       isMounted.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    setMachineStatus(status);
+  }, [status]);
 
   const checkToken = async () => {
     try {
@@ -241,7 +246,7 @@ const LiveReportScreen = () => {
                       <Text style={styles.headerText2}>Status</Text>
                     </View>
                     <View style={[styles.cell1, styles.columnValue1]}>
-                    <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machineDetails.status) }]} />
+                    <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machineStatus) }]} />
                     </View>
                   </View>
                 </>

@@ -129,8 +129,8 @@ const DashboardScreen = () => {
   );
 
   const handleSquarePress = (machine) => {
-    // console.log('Selected Machine ID:', machine.machine_id);
-    navigation.navigate('WORK CENTER', { id: machine.machine_id });
+    // console.log('Selected Machine ID:', machine.machine_id, machine.status);
+    navigation.navigate('WORK CENTER', { id: machine.machine_id, status: machine.status });
   };
 
   const getSquareBackgroundColor = (production_count, target_production) => {
