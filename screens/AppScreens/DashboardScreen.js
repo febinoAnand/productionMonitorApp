@@ -129,8 +129,8 @@ const DashboardScreen = () => {
   );
 
   const handleSquarePress = (machine) => {
-    // console.log('Selected Machine ID:', machine.machine_id);
-    navigation.navigate('WORK CENTER', { id: machine.machine_id });
+    // console.log('Selected Machine ID:', machine.machine_id, machine.status);
+    navigation.navigate('WORK CENTER', { id: machine.machine_id, status: machine.status });
   };
 
   const getSquareBackgroundColor = (production_count, target_production) => {
@@ -148,6 +148,12 @@ const DashboardScreen = () => {
     await fetchGroupData();
     setRefreshing(false);
   }, []);
+
+  const getRectangleColor = (status) => {
+    if (status === 1) return 'red';
+    if (status === 0) return '#6df138';
+    return 'yellow';
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent} 
@@ -175,6 +181,7 @@ const DashboardScreen = () => {
                       <Text style={styles.ovalText}>{machine.production_count}</Text>
                       <View style={styles.line} />
                       <Text style={styles.ovalText}>{machine.target_production}</Text>
+                      <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machine.status) }]} />
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -314,6 +321,12 @@ const styles = StyleSheet.create({
     width: 60,
     backgroundColor: 'black',
     marginHorizontal: 5,
+  },
+  redRectangle: {
+    width: 80,
+    height: 10,
+    marginTop: 10,
+    borderRadius: 2,
   },
 });
 

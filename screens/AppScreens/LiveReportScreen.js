@@ -10,9 +10,10 @@ import NetInfo from '@react-native-community/netinfo';
 const LiveReportScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { id } = route.params || {};
+  const { id, status } = route.params || {};
   const [machineDetails, setMachineDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [machineStatus, setMachineStatus] = useState(status);
   const intervalRef = useRef(null);
   const isMounted = useRef(true);
 
@@ -22,6 +23,10 @@ const LiveReportScreen = () => {
       isMounted.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    setMachineStatus(status);
+  }, [status]);
 
   const checkToken = async () => {
     try {
@@ -161,6 +166,12 @@ const LiveReportScreen = () => {
 
   const latestShift = machineDetails ? getLatestShift(machineDetails.shifts) : null;
 
+  const getRectangleColor = (status) => {
+    if (status === 1) return 'red';
+    if (status === 0) return '#6df138';
+    return 'yellow';
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -228,6 +239,14 @@ const LiveReportScreen = () => {
                     </View>
                     <View style={[styles.cell1, styles.columnValue1]}>
                       <Text style={styles.valueText}>{machineDetails && machineDetails.date ? machineDetails.date : 'N/A'}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.row1}>
+                    <View style={[styles.cell1, styles.columnHeader1]}>
+                      <Text style={styles.headerText2}>Status</Text>
+                    </View>
+                    <View style={[styles.cell1, styles.columnValue1]}>
+                    <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machineStatus) }]} />
                     </View>
                   </View>
                 </>
@@ -454,6 +473,11 @@ const styles = StyleSheet.create({
   },
   columnValue1: {
     backgroundColor: '#f6f6f6',
+  },
+  redRectangle: {
+    width: 80,
+    height: 10,
+    borderRadius: 2,
   },
 });
 
