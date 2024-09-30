@@ -19,6 +19,7 @@ const ProductionScreen = () => {
   const [webSocket, setWebSocket] = useState(null);
   const selectedDateRef = useRef(selectedDate);
   const navigation = useNavigation();
+  const wsRef = useRef(null);
 
   useEffect(() => {
     selectedDateRef.current = selectedDate;
@@ -40,9 +41,16 @@ const ProductionScreen = () => {
     fetchInitialData();
 
     const ws = new WebSocket(`${BaseURL.replace('https', 'wss')}data/production/`);
+    wsRef.current = ws;
     ws.onopen = () => {
       // console.log('WebSocket connected');
     };
+
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected && !wsRef.current) {
+        reconnectWebSocket();
+      }
+    });
 
     ws.onmessage = (event) => {
       try {
@@ -91,14 +99,16 @@ const ProductionScreen = () => {
 
     ws.onclose = () => {
       // console.log('WebSocket disconnected');
+      setWebSocket(null);
     };
 
     setWebSocket(ws);
 
     return () => {
-      if (ws) {
-        ws.close();
+      if (wsRef.current) {
+        wsRef.current.close();
       }
+      unsubscribe();
     };
   }, [navigation]);
 

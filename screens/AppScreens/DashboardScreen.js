@@ -12,6 +12,7 @@ const DashboardScreen = () => {
   const navigation = useNavigation();
   const websocketRef = useRef(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
 
   const checkToken = async () => {
     try {
@@ -117,6 +118,20 @@ const DashboardScreen = () => {
       websocketRef.current = null;
     }
   };
+
+  const handleNetworkChange = async (state) => {
+    setIsConnected(state.isConnected);
+    if (state.isConnected && !websocketRef.current) {
+      connectWebSocket();
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(handleNetworkChange);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
