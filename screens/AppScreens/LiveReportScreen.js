@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
@@ -14,6 +14,7 @@ const LiveReportScreen = () => {
   const [machineDetails, setMachineDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [machineStatus, setMachineStatus] = useState(status);
+  const websocketRef = useRef(null);
   const intervalRef = useRef(null);
   const isMounted = useRef(true);
 
@@ -21,6 +22,7 @@ const LiveReportScreen = () => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+      closeWebSocket();
     };
   }, []);
 
@@ -93,37 +95,47 @@ const LiveReportScreen = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const startFetchingData = useCallback(() => {
-    // console.log('Starting data fetch interval');
-    fetchData();
-    intervalRef.current = setInterval(() => {
-      // console.log('Fetching data...');
-      fetchData();
-    }, 20000);
-  }, [id]);
+  const connectWebSocket = () => {
+    const wsUrl = `${BaseURL.replace('https', 'wss')}data/individual-report/${id}/`;
+    websocketRef.current = new WebSocket(wsUrl);
 
-  const stopFetchingData = useCallback(() => {
-    if (intervalRef.current) {
-      // console.log('Stopping data fetch interval');
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    websocketRef.current.onopen = () => {
+      // console.log('WebSocket connection opened.');
+    };
+
+    websocketRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // console.log(data)
+      if (data && data.machine_id === id) {
+        setMachineDetails(data);
+      }
+    };
+
+    websocketRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    websocketRef.current.onclose = () => {
+      // console.log('WebSocket connection closed. Reconnecting...');
+    };
+  };
+
+  const closeWebSocket = () => {
+    if (websocketRef.current) {
+      websocketRef.current.close();
+      websocketRef.current = null;
     }
-  }, []);
+  };
 
   useFocusEffect(
     useCallback(() => {
-      startFetchingData();
+      connectWebSocket();
+      fetchData();
       return () => {
-        stopFetchingData();
+        closeWebSocket();
       };
-    }, [startFetchingData, stopFetchingData])
+    }, [id])
   );
-
-  useEffect(() => {
-    return () => {
-      stopFetchingData();
-    };
-  }, [stopFetchingData]);
 
   const getLatestTiming = (shift) => {
     if (!shift || !shift.shift_start_time) {
