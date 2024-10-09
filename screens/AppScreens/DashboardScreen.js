@@ -13,6 +13,7 @@ const DashboardScreen = () => {
   const websocketRef = useRef(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
+  const [deviceStatus, setDeviceStatus] = useState(0);
 
   const checkToken = async () => {
     try {
@@ -64,6 +65,7 @@ const DashboardScreen = () => {
         }));
 
         setGroups(updatedGroups.reverse());
+        setDeviceStatus(responseData.device_status);
       } else {
         console.error('Expected an array inside "groups", but received:', responseData.groups);
         setGroups([]);
@@ -100,6 +102,7 @@ const DashboardScreen = () => {
           })),
         }));
         setGroups(updatedGroups.reverse());
+        setDeviceStatus(data.device_status);
       }
     };
 
@@ -174,6 +177,14 @@ const DashboardScreen = () => {
     <ScrollView contentContainerStyle={styles.scrollViewContent} 
     refreshControl={ <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
     >
+      <View style={styles.deviceStatusContainer}>
+        <Text style={styles.deviceText}>Device :</Text>
+        <View style={[styles.statusCircle, { backgroundColor: deviceStatus === 0 ? '#6df138' : 'red' }]} />
+        <Text style={[styles.statusText, { color: deviceStatus === 0 ? '#6df138' : 'red' }]}>
+          {deviceStatus === 0 ? 'Online' : 'Offline'}
+        </Text>
+      </View>
+      <View style={{ height: 30 }}></View>
       <View style={styles.container}>
         {groups.map((group) => {
           if (group.machines.length === 0) return null;
@@ -342,6 +353,37 @@ const styles = StyleSheet.create({
     height: 10,
     marginTop: 10,
     borderRadius: 2,
+  },
+  deviceStatusContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f1f1',
+    padding: 10,
+    borderRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  deviceText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  statusCircle: {
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
+    marginRight: 5,
+  },
+  statusText: {
+    fontSize: 12,
   },
 });
 
