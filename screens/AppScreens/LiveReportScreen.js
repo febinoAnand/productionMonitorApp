@@ -255,6 +255,14 @@ const LiveReportScreen = () => {
                   </View>
                   <View style={styles.row1}>
                     <View style={[styles.cell1, styles.columnHeader1]}>
+                      <Text style={styles.headerText2}>Last Production Time</Text>
+                    </View>
+                    <View style={[styles.cell1, styles.columnValue1]}>
+                      <Text style={styles.valueText}>{machineDetails.latest_production_time}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.row1}>
+                    <View style={[styles.cell1, styles.columnHeader1]}>
                       <Text style={styles.headerText2}>Status</Text>
                     </View>
                     <View style={[styles.cell1, styles.columnValue1]}>
