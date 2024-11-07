@@ -177,14 +177,14 @@ const DashboardScreen = () => {
     <ScrollView contentContainerStyle={styles.scrollViewContent} 
     refreshControl={ <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
     >
-      <View style={styles.deviceStatusContainer}>
+      {/* <View style={styles.deviceStatusContainer}>
         <Text style={styles.deviceText}>Device :</Text>
         <View style={[styles.statusCircle, { backgroundColor: deviceStatus === 0 ? '#6df138' : 'red' }]} />
         <Text style={[styles.statusText, { color: deviceStatus === 0 ? '#6df138' : 'red' }]}>
           {deviceStatus === 0 ? 'Online' : 'Offline'}
         </Text>
-      </View>
-      <View style={{ height: 30 }}></View>
+      </View> */}
+      {/* <View style={{ height: 30 }}></View> */}
       <View style={styles.container}>
         {groups.map((group) => {
           if (group.machines.length === 0) return null;

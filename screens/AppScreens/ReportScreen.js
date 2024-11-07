@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform, ActivityIndicator } from 'react-native';
 import DatePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import NetInfo from '@react-native-community/netinfo';
 
 const hardCodedShifts = [
@@ -86,6 +86,7 @@ const ReportScreen = () => {
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [searchResults, setSearchResults] = useState(hardCodedShifts);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   const checkToken = async () => {
@@ -165,7 +166,7 @@ const ReportScreen = () => {
     }
   
     const selectedDateString = selectedDate.toISOString().split('T')[0];
-  
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post(
@@ -196,20 +197,10 @@ const ReportScreen = () => {
       setSearchResults(filteredShifts);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const handleReset = () => {
-    setSelectedOption(null);
-    setSelectedDate(new Date());
-    setSearchResults(hardCodedShifts);
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      handleReset();
-    }, [])
-  );
 
   const calculateShiftTotalCount = (shift) => {
     return shift.time_slots.reduce((total, slot) => total + slot.count, 0);
@@ -311,9 +302,13 @@ const ReportScreen = () => {
             onChange={handleDateChange}
           />
         )}
-        {searchResults.length === 0 ? (
-          <Text style={styles.messageText}>No data available.</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="dodgerblue" style={styles.loadingSpinner} />
         ) : (
+          <>
+            {searchResults.length === 0 ? (
+              <Text style={styles.messageText}>No data available.</Text>
+            ) : (
           <View style={styles.whiteContainer}>
             {searchResults.map((shift, shiftIndex) => {
               const shiftTotalCount = calculateShiftTotalCount(shift);
@@ -379,6 +374,8 @@ const ReportScreen = () => {
             })}
           </View>
         )}
+        </>
+      )}
         <View style={{ height: 20 }}></View>
       </View>
     </ScrollView>
@@ -591,6 +588,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     maxHeight: 300,
+  },
+  loadingSpinner: {
+    marginVertical: 20,
   },
 });
 
