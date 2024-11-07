@@ -331,7 +331,7 @@ const ProductionScreen = () => {
                       return (
                         <View key={machineIndex} style={styles.row}>
                           <View style={[styles.cell, cellStyle, { width: 80 }]}>
-                            <Text style={[styles.valueText, textStyle]}>{machine.machine_name}</Text>
+                            <Text style={[styles.valueText1, textStyle]}>{machine.machine_name}</Text>
                           </View>
                           {shiftHeaders.map((shiftHeader, idx) => {
                             const shift = machine.shifts ? machine.shifts.find(s => {
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   whiteContainer: {
-    width: '100%',
+    width: '105%',
     backgroundColor: '#f6f6f6',
     borderRadius: 10,
     padding: 12,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     borderColor: 'black',
   },
   headerRow: {
-    backgroundColor: 'lightblue',
+    backgroundColor: '#59adff',
   },
   cell: {
     flex: 1,
@@ -526,6 +526,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
+  valueText1: {
+    fontSize: 10,
+    textAlign: 'center',
+  },
   totalRow: {
     backgroundColor: '#f6f6f6',
   },
@@ -550,6 +554,12 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  totalText: {
+    color: 'black',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 12,
   },
 });
 

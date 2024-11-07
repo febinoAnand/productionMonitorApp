@@ -337,16 +337,16 @@ const ReportScreen = () => {
                       {shift.time_slots.map((slot, index) => (
                         <View key={index} style={styles.row}>
                           <View style={[styles.cell, styles.columnValue, { width: 95 }]}>
-                            <Text style={styles.valueText}>{`${slot.start_time} - ${slot.end_time}`}</Text>
+                            <Text style={styles.valueText}>{`${slot.start_time} -${slot.end_time}`}</Text>
                           </View>
                           <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
-                            <Text style={styles.valueText}>{slot.count}</Text>
+                            <Text style={styles.valueText1}>{slot.count}</Text>
                           </View>
                           <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
-                            <Text style={styles.valueText}>{slot.actual}</Text>
+                            <Text style={styles.valueText1}>{slot.actual}</Text>
                           </View>
                           <View style={[styles.cell, styles.columnValue, { width: 80 }]}>
-                            <Text style={styles.valueText}>{slot.count - slot.actual}</Text>
+                            <Text style={styles.valueText1}>{slot.count - slot.actual}</Text>
                           </View>
                         </View>
                       ))}
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     height: 2,
     width: '100%',
     backgroundColor: 'gray',
-    marginVertical: 20,
+    marginVertical: 10,
   },
   groupContainer: {
     width: '100%',
@@ -459,28 +459,28 @@ const styles = StyleSheet.create({
     bottom: 20,
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#59adff',
+    // color: '#59adff',
     padding: 10,
     borderRadius: 5,
   },
   tableContainer: {
     width: '100%',
     bottom: 20,
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#f6f6f6',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5.84,
-    elevation: 8,
+    // justifyContent: 'flex-start',
+    // alignItems: 'stretch',
+    // padding: 10,
+    // borderWidth: 1,
+    // borderColor: '#f6f6f6',
+    // borderRadius: 5,
+    // backgroundColor: '#f6f6f6',
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 10,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 5.84,
+    // elevation: 8,
   },
   table: {
     width: '100%',
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 8,
+    fontSize: 9.5,
   },
   headerText1: {
     color: 'black',
@@ -526,6 +526,9 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 10,
+  },
+  valueText1: {
+    fontSize: 12,
   },
   messageText: {
     fontSize: 16,
