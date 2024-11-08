@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert, RefreshControl, Modal, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
+import debounce from 'lodash/debounce';
 import NetInfo from '@react-native-community/netinfo';
 
 const ProductionScreen = () => {
@@ -17,6 +18,7 @@ const ProductionScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [webSocket, setWebSocket] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const selectedDateRef = useRef(selectedDate);
   const navigation = useNavigation();
   const wsRef = useRef(null);
@@ -135,21 +137,21 @@ const ProductionScreen = () => {
   };
 
   const fetchGroupData = async (date = null) => {
-    setLoading(true);
+    if (!initialLoad) setLoading(true);
     const isTokenValid = await checkToken();
     if (!isTokenValid) {
       const networkState = await NetInfo.fetch();
       if (networkState.isConnected) {
         navigation.replace('Login');
       }
-      setLoading(false);
+      if (!initialLoad) setLoading(false);
       return;
     }
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         console.error('No token found in AsyncStorage');
-        setLoading(false);
+        if (!initialLoad) setLoading(false);
         return;
       }
       const formattedDate = date ? date.toISOString().split('T')[0] : null;
@@ -193,8 +195,20 @@ const ProductionScreen = () => {
       console.error('Error fetching production data:', error);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
+
+  const fetchDataWithDebounce = useCallback(debounce((date) => fetchGroupData(date), 1000), []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchGroupData();
+      return () => {
+        fetchDataWithDebounce.cancel();
+      };
+    }, [])
+  );
 
   const handleDateChange = (event, date) => {
     setShowDatePicker(false);
@@ -265,7 +279,7 @@ const ProductionScreen = () => {
           )
         )}
         <View style={{ height: 20 }}></View>
-        {loading && (
+        {loading && !initialLoad && (
           <ActivityIndicator
             size="large"
             color="dodgerblue"
