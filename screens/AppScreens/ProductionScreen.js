@@ -45,7 +45,7 @@ const ProductionScreen = () => {
     const ws = new WebSocket(`${BaseURL.replace('https', 'wss')}data/production/`);
     wsRef.current = ws;
     ws.onopen = () => {
-      // console.log('WebSocket connected');
+      console.log('WebSocket connected');
     };
 
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -205,6 +205,10 @@ const ProductionScreen = () => {
     useCallback(() => {
       fetchGroupData();
       return () => {
+        if (wsRef.current) {
+          wsRef.current.close();
+          // console.log('WebSocket disconnected');
+        }
         fetchDataWithDebounce.cancel();
       };
     }, [])
