@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 import NetInfo from '@react-native-community/netinfo';
+import CustomAlert from '../AuthScreens/customalert';
 
 export default function DownloadScreen() {
   const [dropdownOptions, setDropdownOptions] = useState([]);
@@ -19,7 +20,7 @@ export default function DownloadScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingShiftWise, setLoadingShiftWise] = useState(false);
-  const [selectedMachine, setSelectedMachine] = useState(null);
+  const [showSelectAlert, setShowSelectAlert] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState('PDF');
   const [modalVisible, setModalVisible] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
@@ -74,7 +75,14 @@ export default function DownloadScreen() {
     }
   };
 
-  
+  const handleButtonPress = () => {
+    if (!selectedOption) {
+      setShowSelectAlert(true);
+    } else {
+      setShowSelectAlert(false);
+      fetchDataAndGenerateReport();
+    }
+  };
 
   const fetchDataAndGenerateReport = async () => {
     if (!selectedOption || !selectedDate) {
@@ -533,10 +541,15 @@ const generateShiftWiseReportCsv = (data) => {
           title="SHIFT WISE REPORT"
           icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
           buttonStyle={styles.button}
-          onPress={fetchDataAndGenerateReport}
+          onPress={handleButtonPress}
           loading={loadingShiftWise}
         />
       </View>
+      <CustomAlert
+        visible={showSelectAlert}
+        onClose={() => setShowSelectAlert(false)}
+        message="Please select a machine for generating shift wise report."
+      />
     </ScrollView>
   );
 }
@@ -706,5 +719,8 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#d3d3d3',
   },
 });
