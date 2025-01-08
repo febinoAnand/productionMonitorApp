@@ -2,7 +2,7 @@
   "expo": {
     "name": "HL Mando Production",
     "slug": "productionmonitor",
-    "version": "1.0.4",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
       },
       "supportsTablet": true,
       "bundleIdentifier": "com.hlmando.production",
-      "buildNumber": "1.0.4" 
+      "buildNumber": "1.0.6" 
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.hlmando.production",
-      "versionCode": 4,
+      "versionCode": 10,
       "googleServicesFile": "google-services.json"
     },
     "web": {
