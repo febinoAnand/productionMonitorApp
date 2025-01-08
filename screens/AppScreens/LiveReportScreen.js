@@ -87,6 +87,11 @@ const LiveReportScreen = () => {
     }
   };
 
+useEffect(() => {
+  const intervalId = setInterval(fetchData, 10000);
+  return () => clearInterval(intervalId);
+}, [id]);
+
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();

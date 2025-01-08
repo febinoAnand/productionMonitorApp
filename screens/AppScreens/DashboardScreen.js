@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     left: 3,
   },
   square: {
-    width: '43%',
+    width: '38%',
     height: 150,
     backgroundColor: '#f6f6f6',
     borderRadius: 20,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   oval: {
-    width: '80%',
+    width: '75%',
     height: '60%',
     top: 45,
     backgroundColor: '#64b8ff',

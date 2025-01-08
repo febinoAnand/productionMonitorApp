@@ -19,6 +19,7 @@ export default function Settings({ navigation }) {
     const [email, setEmail] = useState('');
     const [designation, setDesignation] = useState('');
     const [mobileNo, setMobileNo] = useState('');
+    const [loginTime, setLoginTime] = useState('');
     const [onlyForUsers,setOnlyForUsers] = useState(true);
 
     useEffect(() => {
@@ -57,6 +58,7 @@ export default function Settings({ navigation }) {
             setEmail(await AsyncStorage.getItem('emailID') || '');
             setDesignation(await AsyncStorage.getItem('designation') || '');
             setMobileNo(await AsyncStorage.getItem('mobileNo') || '');
+            setLoginTime(await AsyncStorage.getItem('loggedinat') || '');
             setOnlyForUsers(true);
         }
     }
@@ -185,6 +187,8 @@ export default function Settings({ navigation }) {
                 />
                 <Input
                     placeholder="30-07-2024  12:24 PM"
+                    value={loginTime}
+                    onChangeText={setLoginTime}
                     editable={false}
                     selectTextOnFocus={false}
                     leftIcon={<Icon name="clock-o" type="font-awesome" size={24} color="#59adff" />}
