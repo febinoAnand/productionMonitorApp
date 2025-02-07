@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Platform, TouchableOpacity, Modal } from 'react-native';
+import { Checkbox } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -24,6 +25,12 @@ export default function DownloadScreen() {
   const [selectedFormat, setSelectedFormat] = useState('PDF');
   const [modalVisible, setModalVisible] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
+  const [selectedReports, setSelectedReports] = useState({
+    summary: false,
+    shiftWise: false,
+  });
+  const [selectedMachines, setSelectedMachines] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -52,6 +59,31 @@ export default function DownloadScreen() {
     }
   };
 
+  const toggleReportSelection = (report) => {
+    setSelectedReports((prevState) => {
+      if (report === 'summary') {
+        return { summary: true, shiftWise: false };
+      }
+      if (report === 'shiftWise') {
+        return { summary: false, shiftWise: true };
+      }
+    });
+  };
+
+  const handleDownload = () => {
+    if (!selectedReports.summary && !selectedReports.shiftWise) {
+      Alert.alert('Missing Selection', 'Please select at least one report type and a machine.');
+      return;
+    }
+
+    if (selectedReports.summary) {
+      handleSummaryReport();
+    }
+    if (selectedReports.shiftWise) {
+      handleButtonPress();
+    }
+  };
+
   const fetchDropdownOptions = async () => {
     const isTokenValid = await checkToken();
     if (!isTokenValid) {
@@ -75,8 +107,29 @@ export default function DownloadScreen() {
     }
   };
 
+  const toggleMachineSelection = (machine) => {
+    setSelectedMachines(prevSelected => {
+      const isSelected = prevSelected.some(item => item.value === machine.value);
+      const newSelection = isSelected 
+        ? prevSelected.filter(item => item.value !== machine.value)
+        : [...prevSelected, machine];
+  
+      return newSelection;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedMachines([]);
+    } else {
+      setSelectedMachines(dropdownOptions);
+    }
+    setSelectAll(!selectAll);
+  };
+
+
   const handleButtonPress = () => {
-    if (!selectedOption) {
+    if (!selectedMachines) {
       setShowSelectAlert(true);
     } else {
       setShowSelectAlert(false);
@@ -85,7 +138,7 @@ export default function DownloadScreen() {
   };
 
   const fetchDataAndGenerateReport = async () => {
-    if (!selectedOption || !selectedDate) {
+    if (!selectedMachines || !selectedDate) {
       Alert.alert('Missing Information', 'Please select a machine and date.');
       return;
     }
@@ -94,8 +147,10 @@ export default function DownloadScreen() {
 
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(`${BaseURL}data/hourly-shift-report/`, {
-        machine_id: selectedOption.value,
+      const machineIds = selectedMachines.map(machine => machine.value);
+      // console.log("Sending machine_id:", machineIds); 
+      const response = await axios.post(`${BaseURL}data/hourly-shift-report-select-machine/`, {
+        machine_id: machineIds,
         date: selectedDate.toISOString().split('T')[0]
       }, {
         headers: { Authorization: `Token ${token}` }
@@ -128,24 +183,10 @@ export default function DownloadScreen() {
   };
 
   const generateShiftWiseReportHtml = (data) => {
-    const shifts = data.shifts || [];
-    const filteredShifts = shifts.filter(shift => shift.timing && Object.keys(shift.timing).length > 0);
-    const grandTotal = filteredShifts.reduce((totals, shift) => {
-      const { production, target, difference } = Object.values(shift.timing).reduce((acc, [productionCount, targetCount]) => {
-        acc.production += productionCount;
-        acc.target += targetCount;
-        acc.difference += (productionCount - targetCount);
-        return acc;
-      }, { production: 0, target: 0, difference: 0 });
-  
-      return {
-        production: totals.production + production,
-        target: totals.target + target,
-        difference: totals.difference + difference
-      };
-    }, { production: 0, target: 0, difference: 0 });
-  
-    const htmlContent = `
+    const { date, machine_data } = data;
+    let pageIndex = 1;
+
+    let reportHtml = `
       <html>
         <head>
           <style>
@@ -157,84 +198,113 @@ export default function DownloadScreen() {
             .info { display: flex; justify-content: space-between; margin-bottom: 20px; }
             .info p { margin: 0; }
             .total-row { font-weight: bold; background-color: #f0f0f0; }
+            .page-break { page-break-before: always; } 
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: gray; }
           </style>
         </head>
         <body>
-          <div class="info">
-            <p>${data.machine_name ? `<strong>Machine Name:</strong> ${data.machine_name}` : ''}</p>
-            <p>${data.date ? `<strong>Date:</strong> ${data.date}` : ''}</p>
-          </div>
-          <h1>Shift Wise Report</h1>
-          ${filteredShifts.length > 0 ? `
-            <table>
-              <tr>
-                <th>Shifts</th>
-                <th>Time Range</th>
-                <th>Production Count</th>
-                <th>Target Count</th>
-                <th>Difference</th>
-              </tr>
-              ${filteredShifts.map((shift) => {
-                const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
-                let shiftTotalProductionCount = 0;
-                let shiftTotalTargetCount = 0;
-                let shiftTotalDifference = 0;
+          <h1>Hourly Shift Report</h1>`;
 
-                const rows = Object.entries(shift.timing).map(([time, [productionCount, targetCount]]) => {
-                  shiftTotalProductionCount += productionCount;
-                  shiftTotalTargetCount += targetCount;
-                  const difference = productionCount - targetCount;
-                  shiftTotalDifference += difference;
-                  
-                  return `
-                    <tr>
-                      ${Object.keys(shift.timing).indexOf(time) === 0 ? `<td rowspan="${Object.keys(shift.timing).length}">${shiftName}</td>` : ''}
-                      <td>${time}</td>
-                      <td>${productionCount}</td>
-                      <td>${targetCount}</td>
-                      <td>${difference}</td>
-                    </tr>
-                  `;
-                }).join('');
+    Object.keys(machine_data).forEach((machineId, machineIndex) => {
+        if (machineIndex > 0) reportHtml += `<div class="page-break"></div>`;
+        const machineName = machine_data[machineId]?.length > 0 ? machine_data[machineId][0][2] : "Unknown";
 
-                return `${rows}
-                  <tr class="total-row">
-                    <td colspan="2"><strong>${shiftName} Total</strong></td>
-                    <td><strong>${shiftTotalProductionCount}</strong></td>
-                    <td><strong>${shiftTotalTargetCount}</strong></td>
-                    <td><strong>${shiftTotalDifference}</strong></td>
-                  </tr>
-                `;
-              }).join('')}
-            </table>
-          ` : '<p>No shifts available for the selected date and machine.</p>'}
-        </body>
-      </html>
-    `;
-    return htmlContent;
+        reportHtml += `
+          <h2>${machineName} (${machineId}) | Date: ${date}</h2> 
+          <table>
+            <tr>
+              <th>Si. No</th>
+              <th>Shift</th>
+              <th>Date</th>
+              <th>Line</th>
+              <th>Time Range</th>
+              <th>Production Count</th>
+              <th>Target Count</th>
+            </tr>`;
+
+        let currentShift = "";
+        let shiftTotalProduction = 0;
+        let shiftTotalTarget = 0;
+        let rowIndex = 1;
+
+        machine_data[machineId].forEach((shift, index) => {
+            const [shiftNo, shiftDate, machineName, timeRange, production, target] = shift;
+
+            if (currentShift !== shiftNo && index !== 0) {
+                reportHtml += `
+                <tr class="total-row">
+                  <td colspan="5"><strong>Total for Shift - ${currentShift}</strong></td>
+                  <td><strong>${shiftTotalProduction}</strong></td>
+                  <td><strong>${shiftTotalTarget}</strong></td>
+                </tr>`;
+                
+                shiftTotalProduction = 0;
+                shiftTotalTarget = 0;
+            }
+
+            currentShift = shiftNo;
+            shiftTotalProduction += parseInt(production, 10);
+            shiftTotalTarget += parseInt(target, 10);
+
+            reportHtml += `
+            <tr>
+              <td>${rowIndex++}</td>
+              <td>Shift - ${shiftNo}</td>
+              <td>${shiftDate}</td>
+              <td>${machineName}</td>
+              <td>${timeRange}</td>
+              <td>${production}</td>
+              <td>${target}</td>
+            </tr>`;
+        });
+
+        reportHtml += `
+            <tr class="total-row">
+              <td colspan="5"><strong>Total for Shift - ${currentShift}</strong></td>
+              <td><strong>${shiftTotalProduction}</strong></td>
+              <td><strong>${shiftTotalTarget}</strong></td>
+            </tr>
+          </table>`;
+
+        reportHtml += `<div class="footer">${pageIndex}</div>`;
+        pageIndex++;
+    });
+
+    reportHtml += `</body></html>`;
+
+    return reportHtml;
 };
 
+
 const generateShiftWiseReportCsv = (data) => {
-  const shifts = data.shifts || [];
-  const header = 'Shifts,Time Range,Production Count,Target Count,Difference\n';
-  const rows = shifts.flatMap(shift => {
-    const timingEntries = Object.entries(shift.timing);
-    if (timingEntries.length === 0) return [];  
-    const shiftName = shift.shift_name || `Shift ${shift.shift_no}`;
-    const shiftRows = timingEntries.map(([time, [productionCount, targetCount]], index) => 
-      index === 0
-      ? `${shiftName},${time},${productionCount},${targetCount},${productionCount - targetCount}`
-      : `,${time},${productionCount},${targetCount},${productionCount - targetCount}`
-    );
-    const totalProduction = timingEntries.reduce((sum, [, [productionCount]] ) => sum + productionCount, 0);
-    const totalTarget = timingEntries.reduce((sum, [, [, targetCount]] ) => sum + targetCount, 0);
-    const totalDifference = totalProduction - totalTarget;
-    const totalRow = `Total for ${shiftName},,${totalProduction},${totalTarget},${totalDifference}`;
-    
-    return [...shiftRows, totalRow];
-  }).join('\n');
-  
-  return header + rows;
+  const { date, machine_data } = data;
+  let csvContent = 'Machine Name (ID),Shift,Date,Time Range,Production Count,Target Count,Difference\n';
+
+  Object.keys(machine_data).forEach((machineId) => {
+    const shifts = machine_data[machineId];
+    let currentShift = "";
+    let shiftTotalProduction = 0;
+    let shiftTotalTarget = 0;
+
+    shifts.forEach((shift, index) => {
+      const [shiftNo, shiftDate, machineName, timeRange, production, target] = shift;
+
+      if (currentShift !== shiftNo && index !== 0) {
+        csvContent += `,,Total for Shift ${currentShift},,${shiftTotalProduction},${shiftTotalTarget},${shiftTotalProduction - shiftTotalTarget}\n`;
+        shiftTotalProduction = 0;
+        shiftTotalTarget = 0;
+      }
+
+      shiftTotalProduction += production;
+      shiftTotalTarget += target;
+      currentShift = shiftNo;
+
+      csvContent += `${machineName} (${machineId}),Shift ${shiftNo},${shiftDate},${timeRange},${production},${target},${production - target}\n`;
+    });
+    csvContent += `,,Total for Shift ${currentShift},,${shiftTotalProduction},${shiftTotalTarget},${shiftTotalProduction - shiftTotalTarget}\n\n`;
+  });
+
+  return csvContent;
 };
 
   const handleDropdownSelect = (option) => {
@@ -443,20 +513,23 @@ const generateShiftWiseReportCsv = (data) => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Select Machine</Text>
+              <TouchableOpacity onPress={toggleSelectAll} style={styles.selectAllButton}>
+                <Text style={styles.selectAllText}>{selectAll ? 'Deselect All' : 'Select All'}</Text>
+              </TouchableOpacity>
               <ScrollView
                 keyboardShouldPersistTaps="handled"
                 nestedScrollEnabled={true}
                 showsVerticalScrollIndicator={false}
               >
-              {dropdownOptions.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.dropdownItem}
-                  onPress={() => handleDropdownSelect(option)}
-                >
-                  <Text>{option.label}</Text>
-                </TouchableOpacity>
-              ))}
+               {dropdownOptions.map((option, index) => (
+                  <View key={index} style={styles.checkboxContainers}>
+                    <Checkbox
+                      status={selectedMachines.some(item => item.value === option.value) ? 'checked' : 'unchecked'}
+                      onPress={() => toggleMachineSelection(option)}
+                    />
+                    <Text style={styles.checkboxLabel}>{option.label}</Text>
+                  </View>
+                ))}
               </ScrollView>
               <TouchableOpacity onPress={toggleDropdown} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>Close</Text>
@@ -527,22 +600,45 @@ const generateShiftWiseReportCsv = (data) => {
           </View>
         </Modal>
         </View>
-      <View style={{ height: 100 }}></View>
+        {selectedMachines.length > 0 && (
+          <View style={styles.selectedMachinesContainer}>
+            <Text style={styles.selectedMachinesLabel}>Selected Machines:</Text>
+            <View style={styles.selectedMachinesList}>
+              {selectedMachines.map((machine, index) => (
+                <View key={index} style={styles.selectedMachineTag}>
+                  <Text style={styles.selectedMachineText}>{machine.label}</Text>
+                  <TouchableOpacity onPress={() => toggleMachineSelection(machine)}>
+                    <Icon name="close-circle" size={18} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+        <View style={styles.checkboxContainer}>
+          <View style={styles.checkboxItem}>
+            <Checkbox
+              status={selectedReports.summary ? 'checked' : 'unchecked'}
+              onPress={() => toggleReportSelection('summary')}
+            />
+            <Text style={styles.checkboxLabel}>Summary Report</Text>
+          </View>
+          <View style={styles.checkboxItem}>
+            <Checkbox
+              status={selectedReports.shiftWise ? 'checked' : 'unchecked'}
+              onPress={() => toggleReportSelection('shiftWise')}
+            />
+            <Text style={styles.checkboxLabel}>Shift Wise Report</Text>
+          </View>
+        </View>
+
       <View style={styles.buttonContainer}>
         <Button
-          title="SUMMARY REPORT"
+          title="Download"
           icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
           buttonStyle={styles.button}
-          onPress={handleSummaryReport}
-          loading={loadingSummary}
-        />
-        <View style={{ height: 10 }}></View>
-        <Button
-          title="SHIFT WISE REPORT"
-          icon={<Icon name="download" size={25} type="font-awesome" style={{ marginRight: 10 }} color="white" />}
-          buttonStyle={styles.button}
-          onPress={handleButtonPress}
-          loading={loadingShiftWise}
+          onPress={handleDownload}
+          loading={loadingSummary || loadingShiftWise}
         />
       </View>
       <CustomAlert
@@ -723,4 +819,102 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#d3d3d3',
   },
+  checkboxContainer: {
+    marginVertical: 20,
+    width: '85%',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#f7f7f7',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  checkboxItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginLeft: 10,
+  },
+  checkboxContainers: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 8, 
+    paddingHorizontal: 10, 
+    backgroundColor: '#f5f5f5', 
+    borderRadius: 8, 
+    borderWidth: 1, 
+    borderColor: '#ddd', 
+    marginVertical: 5, 
+    elevation: 2, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 1 }, 
+    shadowOpacity: 0.2, 
+    shadowRadius: 1.5 
+  }, 
+  selectAllButton: {
+    paddingVertical: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  selectAllText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  selectedMachinesContainer: {
+    width: '85%',
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    alignItems: 'flex-start',
+  },
+  
+  selectedMachinesLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  
+  selectedMachinesList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center'
+  },
+  
+  selectedMachineTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#59adff',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  
+  selectedMachineText: {
+    color: 'white',
+    fontSize: 14,
+    marginRight: 6,
+  },  
 });
