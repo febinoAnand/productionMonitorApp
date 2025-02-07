@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
-import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,25 +10,9 @@ import NetInfo from '@react-native-community/netinfo';
 const LiveReportScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { id, status } = route.params || {};
+  const { id } = route.params || {};
   const [machineDetails, setMachineDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [machineStatus, setMachineStatus] = useState(status);
-  const websocketRef = useRef(null);
-  const intervalRef = useRef(null);
-  const isMounted = useRef(true);
-
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-      closeWebSocket();
-    };
-  }, []);
-
-  useEffect(() => {
-    setMachineStatus(status);
-  }, [status]);
 
   const checkToken = async () => {
     try {
@@ -65,7 +49,7 @@ const LiveReportScreen = () => {
       console.log('Machine ID is missing or undefined');
       return;
     }
-
+  
     try {
       const todayDate = getTodayDate();
       const response = await axios.post(`${BaseURL}data/individual-report/`, {
@@ -74,7 +58,7 @@ const LiveReportScreen = () => {
       });
       const data = response.data;
       // console.log('API Response:', data);
-
+  
       if (data && data.machine_id === id) {
         setMachineDetails(data);
       } else {
@@ -86,11 +70,14 @@ const LiveReportScreen = () => {
       setLoading(false);
     }
   };
-
-useEffect(() => {
-  const intervalId = setInterval(fetchData, 10000);
-  return () => clearInterval(intervalId);
-}, [id]);
+  
+  useEffect(() => {
+    fetchData();
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, [id]);
 
   const getTodayDate = () => {
     const today = new Date();
@@ -100,47 +87,6 @@ useEffect(() => {
     return `${year}-${month}-${day}`;
   };
 
-  const connectWebSocket = () => {
-    const wsUrl = `${BaseURL.replace('https', 'wss')}data/individual-report/${id}/`;
-    websocketRef.current = new WebSocket(wsUrl);
-
-    websocketRef.current.onopen = () => {
-      // console.log('WebSocket connection opened.');
-    };
-
-    websocketRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // console.log(data)
-      if (data && data.machine_id === id) {
-        setMachineDetails(data);
-      }
-    };
-
-    websocketRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    websocketRef.current.onclose = () => {
-      // console.log('WebSocket connection closed. Reconnecting...');
-    };
-  };
-
-  const closeWebSocket = () => {
-    if (websocketRef.current) {
-      websocketRef.current.close();
-      websocketRef.current = null;
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      connectWebSocket();
-      fetchData();
-      return () => {
-        closeWebSocket();
-      };
-    }, [id])
-  );
 
   const getLatestTiming = (shift) => {
     if (!shift || !shift.shift_start_time) {
@@ -271,7 +217,7 @@ useEffect(() => {
                       <Text style={styles.headerText2}>Status</Text>
                     </View>
                     <View style={[styles.cell1, styles.columnValue1]}>
-                    <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machineStatus) }]} />
+                    <View style={[styles.redRectangle, { backgroundColor: getRectangleColor(machineDetails.status) }]} />
                     </View>
                   </View>
                 </>

@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert, RefreshControl, Modal, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BaseURL } from '../../config/appconfig';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons';
-import debounce from 'lodash/debounce';
 import NetInfo from '@react-native-community/netinfo';
 
 const ProductionScreen = () => {
@@ -16,12 +15,10 @@ const ProductionScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [searchDate, setSearchDate] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [webSocket, setWebSocket] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const selectedDateRef = useRef(selectedDate);
   const navigation = useNavigation();
-  const wsRef = useRef(null);
 
   useEffect(() => {
     selectedDateRef.current = selectedDate;
@@ -41,77 +38,6 @@ const ProductionScreen = () => {
     };
 
     fetchInitialData();
-
-    const ws = new WebSocket(`${BaseURL.replace('https', 'wss')}data/production/`);
-    wsRef.current = ws;
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-    };
-
-    const unsubscribe = NetInfo.addEventListener(state => {
-      if (state.isConnected && !wsRef.current) {
-        reconnectWebSocket();
-      }
-    });
-
-    ws.onmessage = (event) => {
-      try {
-        const receivedData = JSON.parse(event.data);
-        // console.log('Received WebSocket data:', receivedData);
-    
-        const selectedDateFormatted = selectedDateRef.current
-          ? selectedDateRef.current.toISOString().split('T')[0]
-          : null;
-        const receivedDate = receivedData?.date
-          ? new Date(receivedData.date).toISOString().split('T')[0]
-          : null;
-    
-        if (receivedDate && receivedDate === selectedDateFormatted) {
-          // console.log('Date matches, updating data.');
-          const productionData = receivedData.machine_groups || [];
-          const filteredData = productionData
-            .map(group => ({
-              ...group,
-              machines: group.machines ? group.machines.filter(machine =>
-                (machine.shifts || []).length > 0
-              ) : [],
-            }))
-            .filter(group => group.machines.length > 0);
-          const reversedGroups = filteredData.reverse();
-          const firstMachineShifts = reversedGroups.length > 0 && reversedGroups[0].machines.length > 0
-            ? reversedGroups[0].machines.flatMap(machine => machine.shifts || [])
-            : [];
-          const shifts = firstMachineShifts
-            .filter(shift => shift.shift_name || shift.shift_no)
-            .map(shift => shift.shift_name || `Shift-${shift.shift_no}`);
-          // console.log('Updating shift headers:', [...new Set(shifts)]);
-          setShiftHeaders([...new Set(shifts)]);
-          setProductionData(reversedGroups);
-        } else {
-          // console.log('WebSocket data does not match the selected date.');
-        }
-      } catch (error) {
-        console.error('Error handling WebSocket message:', error);
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      // console.log('WebSocket disconnected');
-      setWebSocket(null);
-    };
-
-    setWebSocket(ws);
-
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      unsubscribe();
-    };
   }, [navigation]);
 
   const checkToken = async () => {
@@ -180,8 +106,6 @@ const ProductionScreen = () => {
         }))
         .filter(group => group.machines.length > 0);
 
-      // console.log('Filtered Production Data from API:', filteredData);
-
       setProductionData(filteredData.reverse());
 
       if (filteredData.length > 0 && filteredData[0].machines.length > 0) {
@@ -199,20 +123,13 @@ const ProductionScreen = () => {
     }
   };
 
-  const fetchDataWithDebounce = useCallback(debounce((date) => fetchGroupData(date), 1000), []);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchGroupData();
-      return () => {
-        if (wsRef.current) {
-          wsRef.current.close();
-          // console.log('WebSocket disconnected');
-        }
-        fetchDataWithDebounce.cancel();
-      };
-    }, [])
-  );
+  useEffect(() => {
+    fetchGroupData();
+      const intervalId = setInterval(() => {
+        fetchGroupData();
+      }, 60000);
+      return () => clearInterval(intervalId);
+    }, []);
 
   const handleDateChange = (event, date) => {
     setShowDatePicker(false);
