@@ -1,4 +1,4 @@
-export const BaseURL = "https://productionb.univa.cloud/";
+export const BaseURL = "https://hlmandob.febinosolutions.com/";
 // export const BaseURL = "http://192.168.1.6:9020/";
 // export const BaseURL = "http://192.168.1.171:9002/";
 // export const BaseURL = "https://ifmapi.univa.cloud/";
