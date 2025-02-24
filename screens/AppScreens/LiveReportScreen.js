@@ -146,35 +146,39 @@ useEffect(() => {
     if (!shift || !shift.shift_start_time) {
       return { startTime: 'N/A', endTime: 'N/A' };
     }
-    const timePart = shift.shift_start_time.split('T')[1]; 
-    if (!timePart) {
-      return { startTime: 'N/A', endTime: 'N/A' };
+    const startTime = shift.shift_start_time.split(' ')[1];
+    const [hours, minutes, seconds] = startTime.split(':').map(Number);
+    const period = hours < 12 ? 'AM' : 'PM';
+    let newHours = hours;
+  
+    if (newHours > 12) {
+      newHours -= 12;
+    } else if (newHours === 0) {
+      newHours = 12;
     }
-  
-    const [hours, minutes] = timePart.split(':').map(Number);
-    let period = hours < 12 ? 'AM' : 'PM';
-    let newHours = hours % 12 || 12;
-  
+
     const startTimeDisplay = `${newHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 
     let endHours = (hours + 8) % 24;
     let endPeriod = endHours < 12 ? 'AM' : 'PM';
-    let formattedEndHours = endHours % 12 || 12;
-  
-    const endTimeDisplay = `${formattedEndHours}:${minutes.toString().padStart(2, '0')} ${endPeriod}`;
-  
+
+    if (endHours > 12) {
+      endHours -= 12;
+    } else if (endHours === 0) {
+      endHours = 12;
+    }
+
+    const endTimeDisplay = `${endHours}:${minutes.toString().padStart(2, '0')} ${endPeriod}`;
+
     return { startTime: startTimeDisplay, endTime: endTimeDisplay };
   };
 
   const getLatestShift = (shifts) => {
     if (!shifts || shifts.length === 0) return null;
     const validShifts = shifts.filter(shift => Object.keys(shift.timing).length > 0);
-    
-    if (validShifts.length === 0) return null;
-  
-    return validShifts.reduce((latest, current) => 
-      (latest && latest.shift_no > current.shift_no) ? latest : current
-    );
+    return validShifts.reduce((latest, current) => {
+      return (latest && latest.shift_no > current.shift_no) ? latest : current;
+    }, null);
   };
 
   const latestShift = machineDetails ? getLatestShift(machineDetails.shifts) : null;
